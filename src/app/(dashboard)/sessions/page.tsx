@@ -200,7 +200,7 @@ export default function SessionsPage() {
 
       {/* Pagination component */}
       {!isLoading && users.length > 0 && (
-        <div className="px-6 py-4 card flex items-center justify-between font-inter text-xs">
+        <div className="px-6 py-4 card flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between font-inter text-xs">
           <span className="text-on-surface-variant/80">
             Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
           </span>

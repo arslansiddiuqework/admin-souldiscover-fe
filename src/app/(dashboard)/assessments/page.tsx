@@ -58,7 +58,7 @@ export default function AssessmentsAdminPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {[
           { label: "Published", value: summary.published },
           { label: "Coming soon", value: summary.coming_soon },
@@ -167,7 +167,7 @@ export default function AssessmentsAdminPage() {
         </div>
 
         {pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between px-6 py-3 border-t border-white/[0.06]">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-3 border-t border-white/[0.06]">
             <span className="text-xs text-on-surface-variant/70">
               Page {pagination.page} of {pagination.totalPages}
             </span>

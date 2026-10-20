@@ -118,6 +118,7 @@
   html {
     -webkit-tap-highlight-color: transparent;
     color-scheme: dark;
+    overflow-x: hidden;
   }
 
   body {
@@ -127,6 +128,7 @@
     font-weight: 400;
     letter-spacing: -0.011em;
     font-feature-settings: "cv11", "ss01";
+    overflow-x: hidden;
   }
 
   h1,

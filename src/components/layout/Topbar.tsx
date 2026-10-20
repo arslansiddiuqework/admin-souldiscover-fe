@@ -279,7 +279,7 @@ export default function Topbar() {
           </button>
 
           {showNotifDropdown && (
-            <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 glass-panel-strong rounded-xl overflow-hidden z-50 py-2">
+            <div className="absolute right-0 top-full z-50 mt-2 w-[min(20rem,calc(100vw-1.5rem))] overflow-hidden rounded-xl glass-panel-strong py-2 sm:w-96">
               <div className="px-4 py-2.5 border-b border-white/[0.08] flex justify-between items-center bg-white/[0.03]">
                 <span className="text-xs font-semibold text-on-surface">Notifications</span>
                 {notifications.length > 0 && (

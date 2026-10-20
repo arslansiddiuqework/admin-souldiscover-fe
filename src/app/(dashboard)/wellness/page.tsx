@@ -55,7 +55,7 @@ export default function WellnessPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {[
           { label: "Total", value: summary.totalEnrollments },
           { label: "Active", value: summary.active },
@@ -161,7 +161,7 @@ export default function WellnessPage() {
           </table>
         </div>
 
-        <div className="px-6 py-4 border-t border-border flex items-center justify-between text-xs">
+        <div className="px-6 py-4 border-t border-border flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-xs">
           <span className="text-on-surface-variant/80">
             Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
           </span>

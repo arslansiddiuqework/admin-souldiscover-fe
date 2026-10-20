@@ -235,7 +235,7 @@ export default function UsersPage() {
           </table>
         </div>
 
-        <div className="px-6 py-4 bg-surface-dim/50 border-t border-border flex items-center justify-between font-inter text-xs">
+        <div className="px-6 py-4 bg-surface-dim/50 border-t border-border flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between font-inter text-xs">
           <span className="text-on-surface-variant/80">
             Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
           </span>

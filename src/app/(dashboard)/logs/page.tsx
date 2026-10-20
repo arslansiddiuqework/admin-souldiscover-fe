@@ -147,7 +147,7 @@ export default function LogsPage() {
 
         {/* Pagination component */}
         {!isLoading && logs.length > 0 && (
-          <div className="px-6 py-4 bg-surface-dim/50 border-t border-border flex items-center justify-between font-inter text-xs">
+          <div className="px-6 py-4 bg-surface-dim/50 border-t border-border flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between font-inter text-xs">
             <span className="text-on-surface-variant/80">
               Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
             </span>
@@ -172,7 +172,7 @@ export default function LogsPage() {
       </div>
 
       {/* Cryptographic integrity footer */}
-      <div className="p-4 card flex items-center justify-between font-inter text-[11px]">
+      <div className="p-4 card flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between font-inter text-[11px]">
         <div className="text-on-surface-variant/80">
           Log Security: <span className="font-mono text-on-surface font-normal">Signed & Encrypted</span>
         </div>
