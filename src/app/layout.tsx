@@ -20,8 +20,32 @@ const quicksand = Quicksand({
   display: "swap",
 });
 
+/** Safe metadataBase — invalid/empty NEXT_PUBLIC_APP_URL must not break Vercel builds. */
+function resolveMetadataBase(): URL {
+  const candidates = [
+    process.env.NEXT_PUBLIC_APP_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : undefined,
+    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined,
+    "http://localhost:3002",
+  ];
+
+  for (const candidate of candidates) {
+    const value = candidate?.trim();
+    if (!value) continue;
+    try {
+      return new URL(value);
+    } catch {
+      // try next candidate
+    }
+  }
+
+  return new URL("http://localhost:3002");
+}
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3002"),
+  metadataBase: resolveMetadataBase(),
   title: BRAND_TITLE,
   description: BRAND_DESCRIPTION,
   applicationName: BRAND_NAME,
