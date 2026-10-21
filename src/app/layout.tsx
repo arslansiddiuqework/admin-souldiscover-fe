@@ -44,15 +44,16 @@ export const metadata: Metadata = {
     images: [BRAND_ICON_SRC],
   },
   icons: {
+    // Prefer PNGs first — browsers use these for the tab favicon
     icon: [
-      { url: `/favicon.ico?v=${BRAND_ASSET_VERSION}`, sizes: "any" },
       { url: `/favicon-32x32.png?v=${BRAND_ASSET_VERSION}`, type: "image/png", sizes: "32x32" },
       { url: `/favicon-16x16.png?v=${BRAND_ASSET_VERSION}`, type: "image/png", sizes: "16x16" },
+      { url: `${BRAND_ICON_SRC}?v=${BRAND_ASSET_VERSION}`, type: "image/png", sizes: "192x192" },
       { url: `/icon.png?v=${BRAND_ASSET_VERSION}`, type: "image/png", sizes: "512x512" },
-      { url: `${BRAND_ICON_SRC}?v=${BRAND_ASSET_VERSION}`, type: "image/png" },
+      { url: `/favicon.ico?v=${BRAND_ASSET_VERSION}`, sizes: "any" },
     ],
     apple: [{ url: `/apple-icon.png?v=${BRAND_ASSET_VERSION}`, sizes: "180x180", type: "image/png" }],
-    shortcut: `/favicon.ico?v=${BRAND_ASSET_VERSION}`,
+    shortcut: `/favicon-32x32.png?v=${BRAND_ASSET_VERSION}`,
   },
 };
 
