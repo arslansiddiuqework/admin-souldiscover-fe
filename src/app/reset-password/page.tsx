@@ -60,19 +60,19 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen items-center justify-center font-inter antialiased atmosphere-base text-on-surface overflow-hidden relative">
-      <div className="stars-layer" />
+    <div className="flex flex-col min-h-screen items-center justify-center font-sans antialiased atmosphere-base text-on-surface overflow-hidden relative">
+      <div className="pastel-landscape-bg" aria-hidden />
       <div
         className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] rounded-full z-0 pointer-events-none"
         style={{
-          background: "radial-gradient(circle, rgba(179, 132, 201, 0.22) 0%, rgba(179, 132, 201, 0) 70%)",
+          background: "radial-gradient(circle, rgba(183, 71, 131, 0.16) 0%, rgba(183, 71, 131, 0) 70%)",
           filter: "blur(80px)"
         }}
       />
       <div
         className="absolute bottom-[-20%] right-[-10%] w-[700px] h-[700px] rounded-full z-0 pointer-events-none"
         style={{
-          background: "radial-gradient(circle, rgba(79, 107, 255, 0.14) 0%, rgba(79, 107, 255, 0) 70%)",
+          background: "radial-gradient(circle, rgba(217, 184, 245, 0.35) 0%, rgba(217, 184, 245, 0) 70%)",
           filter: "blur(60px)"
         }}
       />
@@ -101,7 +101,7 @@ export default function ResetPasswordPage() {
                 <button
                   type="button"
                   onClick={() => router.push("/login")}
-                  className="px-6 py-2 bg-white text-[#1c1033] hover:brightness-105 text-xs font-bold rounded-full transition-all cursor-pointer shadow-[rgba(255,255,255,0.7)_0px_1px_0px_0px_inset,rgba(179,132,201,0.35)_0px_10px_30px_0px]"
+                  className="px-6 py-2 bg-primary text-primary-foreground hover:brightness-105 text-xs font-bold rounded-full transition-all cursor-pointer shadow-primary"
                 >
                   Go to Login Now
                 </button>
@@ -124,10 +124,10 @@ export default function ResetPasswordPage() {
                   <label className="text-[10px] font-bold text-on-surface/90 uppercase tracking-wider block" htmlFor="password">
                     New Password
                   </label>
-                  <div className="relative rounded-xl border border-white/[0.08] bg-white/[0.04] transition-all focus-within:border-primary/80 focus-within:ring-1 focus-within:ring-primary/20">
+                  <div className="field-shell">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/70 h-4.5 w-4.5" />
                     <input
-                      className="w-full bg-transparent border-none py-3 pl-12 pr-12 text-on-surface placeholder:text-on-surface-muted focus:ring-0 outline-none text-xs"
+                      className="field-input py-3 pl-12 pr-12 text-xs"
                       id="password"
                       name="password"
                       placeholder="Enter new password"
@@ -151,10 +151,10 @@ export default function ResetPasswordPage() {
                   <label className="text-[10px] font-bold text-on-surface/90 uppercase tracking-wider block" htmlFor="confirm-password">
                     Confirm Password
                   </label>
-                  <div className="relative rounded-xl border border-white/[0.08] bg-white/[0.04] transition-all focus-within:border-primary/80 focus-within:ring-1 focus-within:ring-primary/20">
+                  <div className="field-shell">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/70 h-4.5 w-4.5" />
                     <input
-                      className="w-full bg-transparent border-none py-3 pl-12 pr-12 text-on-surface placeholder:text-on-surface-muted focus:ring-0 outline-none text-xs"
+                      className="field-input py-3 pl-12 pr-12 text-xs"
                       id="confirm-password"
                       name="confirm-password"
                       placeholder="Confirm your password"
@@ -174,7 +174,7 @@ export default function ResetPasswordPage() {
                 </div>
 
                 {/* Requirements checklist */}
-                <div className="bg-white/[0.04] border border-white/[0.08] rounded-xl p-5 space-y-2 mt-2">
+                <div className="bg-[#FFF8FB]/80 border border-border rounded-xl p-5 space-y-2 mt-2">
                   <p className="text-[10px] uppercase font-bold tracking-wider text-on-surface-variant/80 mb-2">
                     Security Strength Checklist
                   </p>
@@ -226,7 +226,7 @@ export default function ResetPasswordPage() {
 
                 {/* Submit button */}
                 <button
-                  className="w-full bg-white text-[#1c1033] hover:brightness-105 font-bold py-3.5 rounded-full transition-all shadow-[rgba(255,255,255,0.7)_0px_1px_0px_0px_inset,rgba(179,132,201,0.35)_0px_10px_30px_0px] flex items-center justify-center gap-2 mt-4 disabled:opacity-75 text-xs tracking-wider cursor-pointer"
+                  className="w-full bg-primary text-primary-foreground hover:brightness-105 font-bold py-3.5 rounded-full transition-all shadow-primary flex items-center justify-center gap-2 mt-4 disabled:opacity-75 text-xs tracking-wider cursor-pointer"
                   type="submit"
                   disabled={isResetting || !validations.length || !validations.hasNumber || !validations.hasSpecial || !validations.match}
                 >
@@ -242,8 +242,8 @@ export default function ResetPasswordPage() {
 
       {/* Sleek bottom footer */}
       <footer className="absolute bottom-6 w-full text-center z-10">
-        <p className="text-[10px] uppercase tracking-widest text-on-surface-muted font-semibold font-inter">
-          © 2025 Soul Discovery All rights reserved.
+        <p className="text-[10px] uppercase tracking-widest text-on-surface-muted font-semibold font-sans">
+          © 2026 Soul Discovery All rights reserved.
         </p>
       </footer>
     </div>

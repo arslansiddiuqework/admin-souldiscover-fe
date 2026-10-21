@@ -53,19 +53,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen items-center justify-center font-inter antialiased atmosphere-base text-on-surface overflow-hidden relative">
-      <div className="stars-layer" />
+    <div className="flex flex-col min-h-screen items-center justify-center font-sans antialiased atmosphere-base text-on-surface overflow-hidden relative">
+      <div className="pastel-landscape-bg" aria-hidden />
       <div
         className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] rounded-full z-0 pointer-events-none"
         style={{
-          background: "radial-gradient(circle, rgba(179, 132, 201, 0.22) 0%, rgba(179, 132, 201, 0) 70%)",
+          background: "radial-gradient(circle, rgba(183, 71, 131, 0.16) 0%, rgba(183, 71, 131, 0) 70%)",
           filter: "blur(80px)"
         }}
       />
       <div
         className="absolute bottom-[-20%] right-[-10%] w-[700px] h-[700px] rounded-full z-0 pointer-events-none"
         style={{
-          background: "radial-gradient(circle, rgba(90, 50, 130, 0.14) 0%, rgba(90, 50, 130, 0) 70%)",
+          background: "radial-gradient(circle, rgba(217, 184, 245, 0.35) 0%, rgba(217, 184, 245, 0) 70%)",
           filter: "blur(60px)"
         }}
       />
@@ -81,7 +81,7 @@ export default function LoginPage() {
             <>
               {/* Recover Password View */}
               <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold tracking-tight text-[#f3eefa] font-display mb-2.5">Forgot Password</h2>
+                <h2 className="text-3xl font-bold tracking-tight text-on-surface font-display mb-2.5">Forgot Password</h2>
                 <p className="text-xs text-on-surface-variant/80 leading-relaxed max-w-[280px] mx-auto">
                   Enter your email address and we&apos;ll send you a link to reset your password.
                 </p>
@@ -94,10 +94,10 @@ export default function LoginPage() {
                   <label className="text-[11px] font-bold text-on-surface/90 uppercase tracking-wider block" htmlFor="recovery-email">
                     Email
                   </label>
-                  <div className="relative rounded-xl border border-[rgba(216,191,227,0.22)] bg-white/[0.04] transition-all focus-within:border-primary/80 focus-within:ring-1 focus-within:ring-primary/20">
+                  <div className="field-shell">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/70 h-4.5 w-4.5" />
                     <input 
-                      className="w-full bg-transparent border-none py-3.5 pl-12 pr-4 text-on-surface placeholder:text-on-surface-muted focus:ring-0 outline-none text-xs" 
+                      className="field-input py-3.5 pl-12 pr-4 text-xs" 
                       id="recovery-email" 
                       name="recovery-email" 
                       placeholder="Enter your registered email" 
@@ -111,7 +111,7 @@ export default function LoginPage() {
 
                 {/* Submit button */}
                 <button 
-                  className="w-full bg-white text-[#1c1033] hover:brightness-105 font-bold py-3.5 rounded-full transition-all shadow-[rgba(255,255,255,0.7)_0px_1px_0px_0px_inset,rgba(179,132,201,0.35)_0px_10px_30px_0px] flex items-center justify-center gap-2 mt-6 disabled:opacity-75 text-xs tracking-wider" 
+                  className="w-full bg-primary text-primary-foreground hover:brightness-105 font-bold py-3.5 rounded-full transition-all shadow-primary flex items-center justify-center gap-2 mt-6 disabled:opacity-75 text-xs tracking-wider" 
                   type="submit"
                   disabled={isSendingRecovery}
                 >
@@ -134,7 +134,7 @@ export default function LoginPage() {
             <>
               {/* Card Header (Sign In & Subtitle) */}
               <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold tracking-tight text-[#f3eefa] font-display mb-2.5">Sign In</h2>
+                <h2 className="text-3xl font-bold tracking-tight text-on-surface font-display mb-2.5">Sign In</h2>
                 <p className="text-xs text-on-surface-variant/80 leading-relaxed max-w-[280px] mx-auto">
                   Welcome back! Please sign in to continue your journey.
                 </p>
@@ -147,10 +147,10 @@ export default function LoginPage() {
                   <label className="text-[11px] font-bold text-on-surface/90 uppercase tracking-wider block" htmlFor="email">
                     Email
                   </label>
-                  <div className="relative rounded-xl border border-[rgba(216,191,227,0.22)] bg-white/[0.04] transition-all focus-within:border-primary/80 focus-within:ring-1 focus-within:ring-primary/20">
+                  <div className="field-shell">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/70 h-4.5 w-4.5" />
                     <input 
-                      className="w-full bg-transparent border-none py-3.5 pl-12 pr-4 text-on-surface placeholder:text-on-surface-muted focus:ring-0 outline-none text-xs" 
+                      className="field-input py-3.5 pl-12 pr-4 text-xs" 
                       id="email" 
                       name="email" 
                       placeholder="Enter your email" 
@@ -167,10 +167,10 @@ export default function LoginPage() {
                   <label className="text-[11px] font-bold text-on-surface/90 uppercase tracking-wider block" htmlFor="password">
                     Password
                   </label>
-                  <div className="relative rounded-xl border border-[rgba(216,191,227,0.22)] bg-white/[0.04] transition-all focus-within:border-primary/80 focus-within:ring-1 focus-within:ring-primary/20">
+                  <div className="field-shell">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/70 h-4.5 w-4.5" />
                     <input 
-                      className="w-full bg-transparent border-none py-3.5 pl-12 pr-12 text-on-surface placeholder:text-on-surface-muted focus:ring-0 outline-none text-xs" 
+                      className="field-input py-3.5 pl-12 pr-12 text-xs" 
                       id="password" 
                       name="password" 
                       placeholder="Enter your password" 
@@ -195,7 +195,7 @@ export default function LoginPage() {
 
                 {/* Submit Button */}
                 <button 
-                  className="w-full bg-white text-[#1c1033] hover:brightness-105 font-bold py-3.5 rounded-full transition-all shadow-[rgba(255,255,255,0.7)_0px_1px_0px_0px_inset,rgba(179,132,201,0.35)_0px_10px_30px_0px] flex items-center justify-center gap-2 mt-6 disabled:opacity-75 text-xs tracking-wider" 
+                  className="w-full bg-primary text-primary-foreground hover:brightness-105 font-bold py-3.5 rounded-full transition-all shadow-primary flex items-center justify-center gap-2 mt-6 disabled:opacity-75 text-xs tracking-wider" 
                   type="submit"
                   disabled={isLoggingIn}
                 >
@@ -207,7 +207,7 @@ export default function LoginPage() {
                 </button>
 
                 {/* Divider line */}
-                <div className="border-t border-border mt-6 pt-5 text-center text-xs text-on-surface-variant/80 font-inter">
+                <div className="border-t border-border mt-6 pt-5 text-center text-xs text-on-surface-variant/80 font-sans">
                   <button
                     type="button"
                     onClick={() => setIsRecovering(true)}
@@ -224,8 +224,8 @@ export default function LoginPage() {
 
       {/* Sleek bottom footer */}
       <footer className="absolute bottom-6 w-full text-center z-10">
-        <p className="text-[10px] uppercase tracking-widest text-on-surface-muted font-semibold font-inter">
-          © 2025 Soul Discovery All rights reserved.
+        <p className="text-[10px] uppercase tracking-widest text-on-surface-muted font-semibold font-sans">
+          © 2026 Soul Discovery All rights reserved.
         </p>
       </footer>
     </div>

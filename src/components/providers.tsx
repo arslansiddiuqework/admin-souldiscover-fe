@@ -44,7 +44,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark" enableSystem={false}>
+      <ThemeProvider attribute="class" defaultTheme="light" forcedTheme="light" enableSystem={false}>
         <ToastContext.Provider value={{ showToast }}>
           {children}
 

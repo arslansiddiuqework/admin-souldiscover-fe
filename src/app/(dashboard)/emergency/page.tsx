@@ -3,6 +3,7 @@
 import React from "react";
 import { useEmergency } from "@/hooks/useEmergency";
 import { AvatarImage } from "@/components/ui/avatar-image";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 export default function EmergencyPage() {
   const { status, logs, contacts, isLoading } = useEmergency();
@@ -35,16 +36,11 @@ export default function EmergencyPage() {
   const isEmergencyActive = status?.system?.crisisEnabled ?? false;
 
   return (
-    <div className="flex flex-col gap-4 text-on-surface font-inter">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl font-medium tracking-tight text-on-surface">
-          Emergency Control Panel
-        </h1>
-        <p className="text-xs text-on-surface-variant/80 mt-1">
-          Monitor system-level emergency response behavior. (Read Only)
-        </p>
-      </div>
+    <div className="flex flex-col gap-4 text-on-surface font-sans">
+      <PageHeader
+        title="Emergency Control Panel"
+        description="Monitor system-level emergency response behavior. (Read Only)"
+      />
 
       {/* Status Card */}
       <div className="card p-5 flex justify-between items-center">
@@ -80,32 +76,20 @@ export default function EmergencyPage() {
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[800px] text-left">
-            <thead className="bg-white/[0.04] border-b border-white/[0.06]">
+            <thead className="admin-table-head">
               <tr>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">
-                  User
-                </th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">
-                  Reason
-                </th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">
-                  Contact
-                </th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">
-                  Time
-                </th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">
-                  Details
-                </th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold text-right">
-                  Status
-                </th>
+                <th className="table-head-cell px-6">User</th>
+                <th className="table-head-cell px-6">Reason</th>
+                <th className="table-head-cell px-6">Contact</th>
+                <th className="table-head-cell px-6">Time</th>
+                <th className="table-head-cell px-6">Details</th>
+                <th className="table-head-cell px-6 text-right">Status</th>
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-white/[0.06]">
+            <tbody className="divide-y divide-border">
               {logs.map((log) => (
-                <tr key={log._id} className="hover:bg-[rgba(179,132,201,0.05)]">
+                <tr key={log._id} className="hover:bg-[#FFF0F6]">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-surface-dim border border-outline-variant flex items-center justify-center font-semibold text-xs text-primary shadow-sm overflow-hidden flex-shrink-0">
@@ -173,10 +157,9 @@ export default function EmergencyPage() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <span
-                      className={`text-[10px] px-2 py-1 rounded font-semibold uppercase tracking-wider ${log.outcome === "completed"
-                          ? "bg-primary/10 text-primary"
-                          : "bg-error/10 text-error"
-                        }`}
+                      className={`badge uppercase tracking-wider text-[10px] ${
+                        log.outcome === "completed" ? "badge-success" : "badge-error"
+                      }`}
                     >
                       {log.callStatus || log.outcome}
                     </span>
@@ -197,15 +180,15 @@ export default function EmergencyPage() {
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] text-left">
-            <thead className="bg-white/[0.04] border-b border-white/[0.06]">
+            <thead className="admin-table-head">
               <tr>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">User</th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">Consent</th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">Contacts</th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">Auto-call</th>
+                <th className="table-head-cell px-6">User</th>
+                <th className="table-head-cell px-6">Consent</th>
+                <th className="table-head-cell px-6">Contacts</th>
+                <th className="table-head-cell px-6">Auto-call</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.06]">
+            <tbody className="divide-y divide-border">
               {!Array.isArray(contacts) || contacts.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-6 py-6 text-xs text-on-surface-variant/70 text-center">
@@ -214,7 +197,7 @@ export default function EmergencyPage() {
                 </tr>
               ) : (
                 contacts.slice(0, 25).map((record: any, idx: number) => (
-                  <tr key={idx} className="hover:bg-[rgba(179,132,201,0.05)]">
+                  <tr key={idx} className="hover:bg-[#FFF0F6]">
                     <td className="px-6 py-4 text-xs">
                       <div className="font-semibold">
                         {record.userId?.name || "Unknown"}
@@ -225,9 +208,9 @@ export default function EmergencyPage() {
                     </td>
                     <td className="px-6 py-4 text-xs">
                       {record.consentAccepted ? (
-                        <span className="text-primary font-semibold">Accepted</span>
+                        <span className="badge badge-success text-[10px]">Accepted</span>
                       ) : (
-                        <span className="text-on-surface-variant/70">Pending</span>
+                        <span className="badge badge-neutral text-[10px]">Pending</span>
                       )}
                     </td>
                     <td className="px-6 py-4 text-xs">

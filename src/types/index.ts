@@ -188,6 +188,11 @@ export interface AnalyticsMetrics {
   scheduledConsultations: number;
   completedConsultations: number;
   upcomingConsultations: number;
+  totalAssessmentCompletions: number;
+  assessmentCompletionsThisWeek: number;
+  assessmentCompletionsThisMonth: number;
+  assessmentInProgressSessions: number;
+  assessmentAbandonedSessions: number;
 }
 
 export interface AnalyticsTrends {
@@ -204,6 +209,11 @@ export interface AnalyticsTrends {
     _id: string;
     count: number;
     avgCompletion: number;
+  }[];
+  assessmentsBySlug: {
+    slug: string;
+    title: string;
+    count: number;
   }[];
 }
 

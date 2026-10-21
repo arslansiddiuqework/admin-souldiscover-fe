@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useLogs } from "@/hooks/useLogs";
 import { AvatarImage } from "@/components/ui/avatar-image";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 export default function DashboardPage() {
   const { metrics, trends, isLoading } = useAnalytics();
@@ -58,7 +59,7 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-5 animate-pulse font-inter text-on-surface">
+      <div className="space-y-5 animate-pulse font-sans text-on-surface">
         <div className="h-10 w-48 bg-surface border border-border rounded-lg"></div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
@@ -80,82 +81,81 @@ export default function DashboardPage() {
     <>
       {/* Crisis Banner */}
       {showCrisisAlert && (
-        <div className="bg-error-container text-on-error-container border border-error/20 px-4 py-2.5 text-center text-sm flex justify-center items-center gap-2 mb-6 rounded-xl font-inter">
+        <div className="bg-error-container text-on-error-container border border-error/20 px-4 py-2.5 text-center text-sm flex justify-center items-center gap-2 mb-6 rounded-xl font-sans">
           <span className="material-symbols-outlined text-[18px] text-error">warning</span>
           <span>SYSTEM NOTICE: {metrics.totalEscalations} crisis escalation logs recorded. Monitoring systems active.</span>
         </div>
       )}
 
-      {/* Page Title & Quick Actions */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-5 gap-3">
-        <div>
-          <h2 className="text-xl font-medium tracking-tight text-on-surface font-inter">System Overview</h2>
-          <p className="text-xs text-on-surface-variant/80 mt-1 font-inter">Real-time status of the Soul Discovery clinical network.</p>
-        </div>
-        <div className="flex gap-3">
-          <Link href="/users">
-            <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface font-normal hover:bg-surface-container-high transition-colors text-xs font-inter">
-              <span className="material-symbols-outlined text-[16px]">group</span>
-              View Users
-            </button>
-          </Link>
-          <Link href="/emergency">
-            <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-error text-error-foreground font-medium hover:opacity-90 transition-opacity shadow-sm text-xs font-inter">
-              <span className="material-symbols-outlined text-[16px]">clinical_notes</span>
-              Review Alerts
-            </button>
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="System Overview"
+        description="Real-time status of the Soul Discovery clinical network."
+        actions={
+          <>
+            <Link href="/users">
+              <button className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-border text-on-surface font-medium hover:bg-surface-variant transition-colors text-xs font-sans">
+                <span className="material-symbols-outlined text-[16px]">group</span>
+                View Users
+              </button>
+            </Link>
+            <Link href="/emergency">
+              <button className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-error text-error-foreground font-medium hover:opacity-90 transition-opacity shadow-sm text-xs font-sans">
+                <span className="material-symbols-outlined text-[16px]">clinical_notes</span>
+                Review Alerts
+              </button>
+            </Link>
+          </>
+        }
+      />
 
       {/* KPI Bento Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5 font-inter">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5 font-sans">
         <div className="card card-hover p-5">
           <div className="flex justify-between items-start mb-3">
-            <div className="w-9 h-9 rounded bg-surface-dim flex items-center justify-center border border-outline-variant">
+            <div className="w-9 h-9 rounded-2xl bg-primary-container flex items-center justify-center border border-border">
               <span className="material-symbols-outlined text-primary text-[18px]">groups</span>
             </div>
             <span className="text-primary/95 text-[11px] font-medium tracking-wide">Users</span>
           </div>
           <h3 className="text-on-surface-variant/70 uppercase tracking-widest font-normal text-[9px] mb-1">Total Registered</h3>
-          <p className="text-xl font-medium text-on-surface">{metrics.totalUsers}</p>
+          <p className="text-2xl font-semibold text-on-surface">{metrics.totalUsers}</p>
         </div>
 
         <div className="card card-hover p-5">
           <div className="flex justify-between items-start mb-3">
-            <div className="w-9 h-9 rounded bg-surface-dim flex items-center justify-center border border-outline-variant">
+            <div className="w-9 h-9 rounded-2xl bg-primary-container flex items-center justify-center border border-border">
               <span className="material-symbols-outlined text-primary text-[18px]">person_check</span>
             </div>
             <span className="text-primary/95 text-[11px] font-medium tracking-wide">Active</span>
           </div>
           <h3 className="text-on-surface-variant/70 uppercase tracking-widest font-normal text-[9px] mb-1">Active Sessions</h3>
-          <p className="text-xl font-medium text-on-surface">{metrics.activeSessions}</p>
+          <p className="text-2xl font-semibold text-on-surface">{metrics.activeSessions}</p>
         </div>
 
         <div className="card card-hover p-5">
           <div className="flex justify-between items-start mb-3">
-            <div className="w-9 h-9 rounded bg-surface-dim flex items-center justify-center border border-outline-variant">
+            <div className="w-9 h-9 rounded-2xl bg-primary-container flex items-center justify-center border border-border">
               <span className="material-symbols-outlined text-primary text-[18px]">analytics</span>
             </div>
             <span className="text-primary/95 text-[11px] font-medium tracking-wide">Therapy</span>
           </div>
           <h3 className="text-on-surface-variant/70 uppercase tracking-widest font-normal text-[9px] mb-1">Sessions</h3>
-          <p className="text-xl font-medium text-on-surface">{metrics.totalSessions}</p>
+          <p className="text-2xl font-semibold text-on-surface">{metrics.totalSessions}</p>
         </div>
 
         <div className="card border-error/25 p-5">
           <div className="flex justify-between items-start mb-3">
-            <div className="w-9 h-9 rounded bg-error/5 flex items-center justify-center border border-error/15">
+            <div className="w-9 h-9 rounded-2xl bg-error-container flex items-center justify-center border border-error/15">
               <span className="material-symbols-outlined text-error text-[18px]">emergency</span>
             </div>
             <span className="text-error/95 text-[11px] font-medium tracking-wide">Emergency</span>
           </div>
           <h3 className="text-error/70 uppercase tracking-widest font-normal text-[9px] mb-1">Dispatches</h3>
-          <p className="text-xl font-medium text-error">{metrics.escalationsThisWeek} This Week</p>
+          <p className="text-2xl font-semibold text-error">{metrics.escalationsThisWeek} This Week</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 font-inter">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 font-sans">
         {/* Chart Section */}
         <div className="lg:col-span-2 card p-6 flex flex-col">
           <div className="flex justify-between items-center mb-4">
@@ -241,7 +241,7 @@ export default function DashboardPage() {
                 {/* Live Tooltip */}
                 {hoveredPoint && (
                   <div
-                    className="absolute bg-surface border border-border rounded-lg p-2.5 shadow-2xl z-20 pointer-events-none transition-all duration-150 font-inter text-[10px]"
+                    className="absolute bg-surface-bright border border-border rounded-lg p-2.5 shadow-popover z-20 pointer-events-none transition-all duration-150 font-sans text-[10px]"
                     style={{
                       left: `${hoveredPoint.x}%`,
                       top: `${hoveredPoint.y}%`,
@@ -371,7 +371,7 @@ export default function DashboardPage() {
           </div>
 
           <Link href="/logs">
-            <button className="w-full mt-6 py-2 text-center text-xs font-semibold text-primary border border-primary/20 rounded-lg hover:bg-primary/10 transition-colors font-inter">
+            <button className="w-full mt-6 py-2 text-center text-xs font-semibold text-primary border border-primary/20 rounded-full hover:bg-primary/10 transition-colors font-sans">
               View All Logs
             </button>
           </Link>
@@ -379,7 +379,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Operational Details Footer */}
-      <div className="mt-8 p-5 card flex flex-col md:flex-row items-start md:items-center justify-between gap-4 font-inter">
+      <div className="mt-8 p-5 card flex flex-col md:flex-row items-start md:items-center justify-between gap-4 font-sans">
         <div className="flex flex-wrap items-center gap-6">
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>

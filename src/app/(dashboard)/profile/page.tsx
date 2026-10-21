@@ -8,6 +8,7 @@ import { useToast } from "@/components/providers";
 import { authService } from "@/services/authService";
 import { Edit2, Check, X, Camera, Trash2, User as UserIcon } from "lucide-react";
 import { AvatarImage } from "@/components/ui/avatar-image";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 export default function ProfilePage() {
   const { adminUser, logout, isLoggingOut, updateProfile, isUpdatingProfile, deleteAvatar, isDeletingAvatar } = useAuth();
@@ -98,17 +99,12 @@ export default function ProfilePage() {
   const isAvatarBusy = isUploading || isDeletingAvatar;
 
   return (
-    <div className="max-w-2xl mx-auto text-on-surface font-inter space-y-5">
+    <div className="max-w-2xl mx-auto text-on-surface font-sans space-y-5">
 
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-medium text-on-surface">
-          Account Profile
-        </h1>
-        <p className="text-xs text-on-surface-variant/80 mt-1">
-          Manage your admin account information and session access.
-        </p>
-      </div>
+      <PageHeader
+        title="Account Profile"
+        description="Manage your admin account information and session access."
+      />
 
       {/* Profile Card */}
       <div className="card p-6 space-y-6">
@@ -171,13 +167,15 @@ export default function ProfilePage() {
           <div className="flex-1">
             {isEditing ? (
               <div className="flex items-center gap-2 max-w-sm">
-                <input
-                  type="text"
-                  value={nameInput}
-                  onChange={(e) => setNameInput(e.target.value)}
-                  className="bg-surface-dim border border-primary/30 rounded-lg px-3 py-1.5 text-xs text-on-surface focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none w-full"
-                  disabled={isUpdatingProfile}
-                />
+                <div className="field-shell flex-1">
+                  <input
+                    type="text"
+                    value={nameInput}
+                    onChange={(e) => setNameInput(e.target.value)}
+                    className="field-input px-3 py-1.5 text-xs"
+                    disabled={isUpdatingProfile}
+                  />
+                </div>
                 <button
                   onClick={handleSaveName}
                   disabled={isUpdatingProfile}
@@ -221,19 +219,15 @@ export default function ProfilePage() {
         {/* Account Info */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-border">
 
-          <div className="bg-surface-dim p-4 rounded-xl border border-border">
-            <p className="text-[10px] uppercase text-on-surface-variant/70">
-              Email
-            </p>
+          <div className="card-muted p-4">
+            <p className="label-eyebrow">Email</p>
             <p className="text-xs font-medium mt-1 text-on-surface">
               {adminUser?.email || "Not available"}
             </p>
           </div>
 
-          <div className="bg-surface-dim p-4 rounded-xl border border-border">
-            <p className="text-[10px] uppercase text-on-surface-variant/70">
-              Role
-            </p>
+          <div className="card-muted p-4">
+            <p className="label-eyebrow">Role</p>
             <p className="text-xs font-medium mt-1 text-on-surface">
               {adminUser?.role || "Administrator"}
             </p>
@@ -242,14 +236,12 @@ export default function ProfilePage() {
         </div>
 
         {/* Session Info (REALISTIC ONLY) */}
-        <div className="bg-surface-dim p-4 rounded-xl border border-border space-y-2">
-          <p className="text-[10px] uppercase text-on-surface-variant/70">
-            Session Information
-          </p>
+        <div className="card-muted p-4 space-y-2">
+          <p className="label-eyebrow">Session Information</p>
 
           <div className="flex justify-between text-[11px]">
             <span className="text-on-surface-variant/70">Status</span>
-            <span className="text-primary font-semibold">Active</span>
+            <span className="badge badge-success text-[10px]">Active</span>
           </div>
 
           <div className="flex justify-between text-[11px]">

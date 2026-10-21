@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { Quicksand } from "next/font/google";
 import "material-symbols/outlined.css";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { ConnectedParticlesBackground } from "@/components/ui/connected-particles-background";
 import {
+  BRAND_ASSET_VERSION,
   BRAND_CAPTION,
   BRAND_DESCRIPTION,
   BRAND_ICON_SRC,
@@ -12,27 +13,22 @@ import {
   BRAND_TITLE,
 } from "@/lib/branding";
 
-const inter = Inter({
+const quicksand = Quicksand({
   subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const plusJakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-jakarta",
+  variable: "--font-quicksand",
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3002"),
   title: BRAND_TITLE,
   description: BRAND_DESCRIPTION,
   applicationName: BRAND_NAME,
   appleWebApp: {
     title: BRAND_NAME,
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
   },
   openGraph: {
     type: "website",
@@ -49,17 +45,19 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/favicon.ico?v=3", sizes: "any" },
-      { url: "/icon.png?v=3", type: "image/png", sizes: "512x512" },
-      { url: `${BRAND_ICON_SRC}?v=3`, type: "image/png" },
+      { url: `/favicon.ico?v=${BRAND_ASSET_VERSION}`, sizes: "any" },
+      { url: `/favicon-32x32.png?v=${BRAND_ASSET_VERSION}`, type: "image/png", sizes: "32x32" },
+      { url: `/favicon-16x16.png?v=${BRAND_ASSET_VERSION}`, type: "image/png", sizes: "16x16" },
+      { url: `/icon.png?v=${BRAND_ASSET_VERSION}`, type: "image/png", sizes: "512x512" },
+      { url: `${BRAND_ICON_SRC}?v=${BRAND_ASSET_VERSION}`, type: "image/png" },
     ],
-    apple: [{ url: "/apple-icon.png?v=3", sizes: "180x180", type: "image/png" }],
-    shortcut: "/favicon.ico?v=3",
+    apple: [{ url: `/apple-icon.png?v=${BRAND_ASSET_VERSION}`, sizes: "180x180", type: "image/png" }],
+    shortcut: `/favicon.ico?v=${BRAND_ASSET_VERSION}`,
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a0614",
+  themeColor: "#FBF9FF",
 };
 
 export default function RootLayout({
@@ -68,9 +66,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
-      <body className={`${inter.variable} ${plusJakarta.variable} antialiased atmosphere-base text-foreground`}>
-        <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${quicksand.variable} antialiased atmosphere-base text-foreground font-sans`}>
+        {/* Soft particle wash only — full pastel landscape is reserved for auth screens */}
+        <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden opacity-70" aria-hidden>
           <ConnectedParticlesBackground />
         </div>
         <div className="relative z-10">

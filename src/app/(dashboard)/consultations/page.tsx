@@ -5,6 +5,7 @@ import { useConsultations } from "@/hooks/useConsultations";
 import { Drawer } from "@/components/ui/Drawer";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/providers";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 export default function ConsultationsPage() {
   const [search, setSearch] = useState("");
@@ -37,13 +38,11 @@ export default function ConsultationsPage() {
   });
 
   return (
-    <div className="flex flex-col gap-4 w-full font-inter text-on-surface">
-      <div>
-        <h2 className="text-xl font-medium tracking-tight text-on-surface">Consultations</h2>
-        <p className="text-xs text-on-surface-variant/80 mt-1">
-          Track psychologist booking requests and session status.
-        </p>
-      </div>
+    <div className="flex flex-col gap-4 w-full font-sans text-on-surface">
+      <PageHeader
+        title="Consultations"
+        description="Track psychologist booking requests and session status."
+      />
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {[
@@ -63,12 +62,12 @@ export default function ConsultationsPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 card p-4">
-        <div className="relative rounded bg-surface-dim border border-outline-variant">
+        <div className="field-shell">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/80 text-lg">
             search
           </span>
           <input
-            className="w-full bg-transparent border-none py-2.5 pl-11 pr-4 text-xs outline-none"
+            className="field-input py-2.5 pl-11 pr-4 text-xs"
             placeholder="Search client, reason, psychologist..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -80,7 +79,7 @@ export default function ConsultationsPage() {
             setStatus(e.target.value);
             setPage(1);
           }}
-          className="rounded bg-surface-dim border border-outline-variant py-2.5 px-3 text-xs outline-none"
+          className="field-select text-xs"
         >
           <option value="all">All statuses</option>
           <option value="scheduled">Scheduled</option>
@@ -92,17 +91,17 @@ export default function ConsultationsPage() {
       <div className="card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[950px] text-left">
-            <thead className="bg-white/[0.04] border-b border-white/[0.06]">
+            <thead className="admin-table-head">
               <tr>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">Client</th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">Psychologist</th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">When</th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">Status</th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">Payment</th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">Reason</th>
+                <th className="table-head-cell px-6">Client</th>
+                <th className="table-head-cell px-6">Psychologist</th>
+                <th className="table-head-cell px-6">When</th>
+                <th className="table-head-cell px-6">Status</th>
+                <th className="table-head-cell px-6">Payment</th>
+                <th className="table-head-cell px-6">Reason</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.06]">
+            <tbody className="divide-y divide-border">
               {isLoading ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-xs text-on-surface-variant/70">
@@ -119,7 +118,7 @@ export default function ConsultationsPage() {
                 consultations.map((booking) => (
                   <tr
                     key={booking._id}
-                    className="hover:bg-[rgba(179,132,201,0.05)] cursor-pointer"
+                    className="hover:bg-[#FFF0F6] cursor-pointer"
                     onClick={() => setSelected(booking)}
                   >
                     <td className="px-6 py-4">
@@ -137,7 +136,13 @@ export default function ConsultationsPage() {
                       <div className="text-[10px] text-on-surface-variant/70">{booking.time}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+                      <span className={`badge uppercase tracking-wider text-[10px] ${
+                        booking.status === "completed"
+                          ? "badge-success"
+                          : booking.status === "cancelled"
+                          ? "badge-error"
+                          : "badge-primary"
+                      }`}>
                         {booking.status}
                       </span>
                     </td>
@@ -214,7 +219,7 @@ export default function ConsultationsPage() {
                     showToast("Failed to update status", "error");
                   }
                 }}
-                className="text-[10px] font-semibold uppercase px-2 py-1 rounded border outline-none bg-surface-dim border-primary/30 text-primary"
+                className="field-select text-[10px] font-semibold uppercase py-1 px-2"
               >
                 <option value="scheduled">Scheduled</option>
                 <option value="completed">Completed</option>

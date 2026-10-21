@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/providers";
 import { useSearchParams } from "next/navigation";
 import { AvatarImage } from "@/components/ui/avatar-image";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 export default function SessionsPage() {
   const searchParams = useSearchParams();
@@ -94,22 +95,19 @@ export default function SessionsPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col gap-4 w-full font-inter text-on-surface">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-        <div>
-          <h2 className="text-xl font-medium tracking-tight text-on-surface">Sessions Directory</h2>
-          <p className="text-xs text-on-surface-variant/80 mt-1">Browse therapy sessions grouped by user profiles.</p>
-        </div>
-      </div>
+    <div className="flex-1 flex flex-col gap-4 w-full font-sans text-on-surface">
+      <PageHeader
+        title="Sessions Directory"
+        description="Browse therapy sessions grouped by user profiles."
+      />
 
       {/* Filter and Search controls */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 card p-4">
-        <div className="relative rounded bg-surface-dim border border-outline-variant transition-all focus-within:border-primary">
+        <div className="field-shell">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/80 text-lg">search</span>
           <input
             type="text"
-            className="w-full bg-transparent border-none py-2.5 pl-11 pr-4 text-xs text-on-surface placeholder-surface-variant focus:ring-0 outline-none"
+            className="field-input py-2.5 pl-11 pr-4 text-xs"
             placeholder="Search users by name or email..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
@@ -119,7 +117,7 @@ export default function SessionsPage() {
         <select
           value={status}
           onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-          className="bg-surface-dim border border-outline-variant rounded-lg px-3 py-2.5 text-xs text-on-surface focus:ring-1 focus:ring-primary outline-none"
+          className="field-select text-xs"
         >
           <option value="all">All Users</option>
           <option value="active">Active Users</option>
@@ -187,7 +185,7 @@ export default function SessionsPage() {
 
               <Button
                 variant="outline"
-                className="w-full text-[11px] font-inter flex items-center justify-center gap-1.5 group-hover:bg-primary/10 group-hover:text-primary transition-colors"
+                className="w-full text-[11px] font-sans flex items-center justify-center gap-1.5 group-hover:bg-primary/10 group-hover:text-primary transition-colors"
                 onClick={(e) => { e.stopPropagation(); handleSelectUser(user); }}
               >
                 <span className="material-symbols-outlined text-[15px]">list_alt</span>
@@ -200,7 +198,7 @@ export default function SessionsPage() {
 
       {/* Pagination component */}
       {!isLoading && users.length > 0 && (
-        <div className="px-6 py-4 card flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between font-inter text-xs">
+        <div className="px-6 py-4 card flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between font-sans text-xs">
           <span className="text-on-surface-variant/80">
             Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
           </span>
@@ -241,7 +239,7 @@ export default function SessionsPage() {
         }
         subtitle={`${selectedUserForSessions?.email}`}
       >
-        <div className="space-y-4 font-inter text-xs text-on-surface">
+        <div className="space-y-4 font-sans text-xs text-on-surface">
           {isUserSessionsLoading ? (
             <div className="space-y-3">
               {[...Array(3)].map((_, i) => (
@@ -264,10 +262,10 @@ export default function SessionsPage() {
                   <div>
                     <div className="flex items-center gap-2 mb-1.5">
                       <span className="font-mono text-[10px] text-on-surface-variant/70 uppercase">ID: {session.sessionId.substring(0,8)}</span>
-                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wider ${
-                        session.status === "active" ? "bg-primary/10 text-primary" : 
-                        session.status === "completed" ? "bg-outline-variant/20 text-on-surface-variant" : 
-                        "bg-warning-container text-warning"
+                      <span className={`badge text-[9px] uppercase tracking-wider ${
+                        session.status === "active" ? "badge-primary" : 
+                        session.status === "completed" ? "badge-neutral" : 
+                        "badge-warning"
                       }`}>
                         {session.status}
                       </span>
@@ -280,7 +278,7 @@ export default function SessionsPage() {
                   
                   <div className="flex flex-col items-end gap-2">
                     {session.hasRisk && (
-                      <span className="text-[9px] bg-error/10 text-error px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                      <span className="badge badge-error text-[9px] uppercase tracking-wider">
                         High Risk
                       </span>
                     )}
@@ -319,17 +317,17 @@ export default function SessionsPage() {
         }
         subtitle={`Session ID: ${inspectSession?.sessionId}`}
       >
-        <div className="space-y-6 font-inter text-xs text-on-surface">
+        <div className="space-y-6 font-sans text-xs text-on-surface">
           {/* Sentiment HUD */}
           <div className="bg-surface-dim p-4 rounded-xl border border-border flex justify-between items-center font-mono">
             <div>
-              <div className="text-on-surface-variant/80 text-[10px] uppercase font-inter">Duration</div>
-              <div className="text-sm font-semibold text-on-surface mt-1 font-inter">{inspectSession?.duration || "0m"}</div>
+              <div className="text-on-surface-variant/80 text-[10px] uppercase font-sans">Duration</div>
+              <div className="text-sm font-semibold text-on-surface mt-1 font-sans">{inspectSession?.duration || "0m"}</div>
             </div>
             <div>
-              <div className="text-on-surface-variant/80 text-[10px] uppercase text-right font-inter">Patient Status</div>
-              <div className="text-sm font-semibold mt-1 text-right font-inter flex justify-end">
-                <span className={`text-[10px] px-2 py-0.5 rounded font-semibold uppercase tracking-wide font-inter ${inspectSession?.hasRisk ? 'bg-error/10 text-error' : 'bg-primary/10 text-primary'}`}>
+              <div className="text-on-surface-variant/80 text-[10px] uppercase text-right font-sans">Patient Status</div>
+              <div className="text-sm font-semibold mt-1 text-right font-sans flex justify-end">
+                <span className={`badge text-[10px] uppercase tracking-wide font-sans ${inspectSession?.hasRisk ? "badge-error" : "badge-success"}`}>
                   {inspectSession?.hasRisk ? "High Risk" : "Stable"}
                 </span>
               </div>
@@ -354,19 +352,19 @@ export default function SessionsPage() {
                     showToast("Failed to update session status.", "error");
                   }
                 }}
-                className="bg-surface border border-border rounded px-3 py-1.5 text-xs text-on-surface focus:ring-1 focus:ring-primary outline-none"
+                className="field-select text-xs py-1.5 w-auto min-w-[8rem]"
               >
                 <option value="active">Active</option>
                 <option value="completed">Completed</option>
                 <option value="archived">Archived</option>
               </select>
             ) : (
-              <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider ${
+              <span className={`badge text-[10px] uppercase tracking-wider ${
                 inspectSession?.status === "active" 
-                  ? "bg-primary/10 text-primary border border-primary/20" 
+                  ? "badge-primary" 
                   : inspectSession?.status === "completed"
-                  ? "bg-outline-variant/20 text-on-surface-variant border border-outline-variant/30"
-                  : "bg-warning-container text-warning border border-warning/20"
+                  ? "badge-neutral"
+                  : "badge-warning"
               }`}>
                 {inspectSession?.status || "active"}
               </span>

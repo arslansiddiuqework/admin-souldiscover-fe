@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useSettings } from "@/hooks/useSettings";
 import { useAuth } from "@/hooks/useAuth";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 export default function SettingsPage() {
   const { settings, isLoading, isUpdating, updateSettings } = useSettings();
@@ -63,43 +64,41 @@ export default function SettingsPage() {
   }
 
   return (
-    <form onSubmit={handleSave} className="flex flex-col gap-4 w-full max-w-4xl font-inter text-on-surface">
-      {/* Header & Quick Action */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-2">
-        <div>
-          <h2 className="text-xl font-medium tracking-tight text-on-surface">System Configuration</h2>
-          <p className="text-xs text-on-surface-variant/80 mt-1">Configure real-time clinical guardrails and safety thresholds.</p>
-        </div>
-
-        {canUpdate ? (
-          <button
-            type="submit"
-            disabled={!hasChanges || isUpdating}
-            className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all shadow-sm ${
-              hasChanges 
-                ? "bg-white text-[#1c1033] hover:brightness-105 cursor-pointer shadow-[rgba(255,255,255,0.7)_0px_1px_0px_0px_inset,rgba(179,132,201,0.35)_0px_10px_30px_0px]" 
-                : "bg-surface-container-high text-on-surface-muted cursor-not-allowed border border-border"
-            }`}
-          >
-            {isUpdating ? (
-              <>
-                <span className="w-3.5 h-3.5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin"></span>
-                Saving...
-              </>
-            ) : (
-              <>
-                <span className="material-symbols-outlined text-[16px]">save</span>
-                Save Changes
-              </>
-            )}
-          </button>
-        ) : (
-          <div className="flex items-center gap-2 bg-surface-container-high px-3.5 py-1.5 rounded-lg border border-border text-[10px] text-on-surface-muted uppercase font-bold tracking-wider">
-            <span className="material-symbols-outlined text-[14px]">lock</span>
-            Read-Only Mode
-          </div>
-        )}
-      </div>
+    <form onSubmit={handleSave} className="flex flex-col gap-4 w-full max-w-4xl font-sans text-on-surface">
+      <PageHeader
+        title="System Configuration"
+        description="Configure real-time clinical guardrails and safety thresholds."
+        actions={
+          canUpdate ? (
+            <button
+              type="submit"
+              disabled={!hasChanges || isUpdating}
+              className={`px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 transition-all shadow-sm ${
+                hasChanges 
+                  ? "bg-primary text-primary-foreground hover:brightness-105 cursor-pointer shadow-primary" 
+                  : "bg-surface-container-high text-on-surface-muted cursor-not-allowed border border-border"
+              }`}
+            >
+              {isUpdating ? (
+                <>
+                  <span className="w-3.5 h-3.5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin"></span>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-[16px]">save</span>
+                  Save Changes
+                </>
+              )}
+            </button>
+          ) : (
+            <div className="flex items-center gap-2 bg-surface-container-high px-3.5 py-1.5 rounded-full border border-border text-[10px] text-on-surface-muted uppercase font-bold tracking-wider">
+              <span className="material-symbols-outlined text-[14px]">lock</span>
+              Read-Only Mode
+            </div>
+          )
+        }
+      />
 
       {/* Notifications */}
       {!canUpdate && (
@@ -192,7 +191,7 @@ export default function SettingsPage() {
                 The maximum number of times the system can call emergency contacts for a single user in 24 hours.
               </p>
             </div>
-            <div>
+            <div className="field-shell w-24">
               <input
                 type="number"
                 min="0"
@@ -200,7 +199,7 @@ export default function SettingsPage() {
                 disabled={!canUpdate}
                 value={maxPerDay}
                 onChange={(e) => setMaxPerDay(parseInt(e.target.value) || 0)}
-                className="w-20 text-sm font-mono text-center bg-surface-dim border border-border focus:border-primary/50 focus:outline-none px-3 py-1.5 rounded text-on-surface disabled:opacity-50 disabled:cursor-not-allowed"
+                className="field-input text-center font-mono text-sm py-1.5 px-2 disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -212,7 +211,7 @@ export default function SettingsPage() {
                 Hours to wait before escalating the same user again after a successful emergency contact.
               </p>
             </div>
-            <div>
+            <div className="field-shell w-24">
               <input
                 type="number"
                 min="0"
@@ -221,7 +220,7 @@ export default function SettingsPage() {
                 disabled={!canUpdate}
                 value={cooldownHours}
                 onChange={(e) => setCooldownHours(parseFloat(e.target.value) || 0)}
-                className="w-20 text-sm font-mono text-center bg-surface-dim border border-border focus:border-primary/50 focus:outline-none px-3 py-1.5 rounded text-on-surface disabled:opacity-50 disabled:cursor-not-allowed"
+                className="field-input text-center font-mono text-sm py-1.5 px-2 disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
           </div>

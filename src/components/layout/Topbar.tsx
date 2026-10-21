@@ -4,11 +4,27 @@ import { useState, useEffect, useRef } from "react";
 import { Bell, Search, Menu, Loader2 } from "lucide-react";
 import { useSidebarStore } from "@/hooks/useSidebarStore";
 import { apiClient } from "@/services/apiClient";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AvatarImage } from "@/components/ui/avatar-image";
+
+const PAGE_TITLES: Record<string, string> = {
+  "/dashboard": "Dashboard",
+  "/users": "Users",
+  "/sessions": "Sessions",
+  "/wellness": "Wellness",
+  "/assessments": "Assessments",
+  "/consultations": "Consultations",
+  "/emergency": "Emergency",
+  "/analytics": "Analytics",
+  "/logs": "Logs",
+  "/settings": "Settings",
+  "/profile": "Profile",
+};
 
 export default function Topbar() {
   const router = useRouter();
+  const pathname = usePathname();
+  const pageTitle = PAGE_TITLES[pathname] || "Admin";
 
   const { toggleSidebar } = useSidebarStore();
 
@@ -53,12 +69,16 @@ export default function Topbar() {
       setShowDropdown(true);
       try {
         const [usersRes, sessionsRes] = await Promise.all([
-          apiClient.get(`/users?search=${encodeURIComponent(searchQuery)}&limit=3`),
-          apiClient.get(`/sessions?search=${encodeURIComponent(searchQuery)}&limit=3`)
+          apiClient.get(
+            `/users?search=${encodeURIComponent(searchQuery)}&limit=3`
+          ),
+          apiClient.get(
+            `/sessions?search=${encodeURIComponent(searchQuery)}&limit=3`
+          ),
         ]);
         setSearchResults({
           users: usersRes.data?.users || [],
-          sessions: sessionsRes.data?.sessions || []
+          sessions: sessionsRes.data?.sessions || [],
         });
       } catch (err) {
         console.error("Global search error:", err);
@@ -72,10 +92,16 @@ export default function Topbar() {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setShowDropdown(false);
       }
-      if (notifDropdownRef.current && !notifDropdownRef.current.contains(event.target as Node)) {
+      if (
+        notifDropdownRef.current &&
+        !notifDropdownRef.current.contains(event.target as Node)
+      ) {
         setShowNotifDropdown(false);
       }
     }
@@ -92,9 +118,15 @@ export default function Topbar() {
         const logsData = res.data?.logs || [];
         if (!active) return;
 
-        const dismissedRaw = localStorage.getItem("admin_dismissed_notifications");
-        const dismissedIds: string[] = dismissedRaw ? JSON.parse(dismissedRaw) : [];
-        const visibleLogs = logsData.filter((log: any) => !dismissedIds.includes(log._id || log.id));
+        const dismissedRaw = localStorage.getItem(
+          "admin_dismissed_notifications"
+        );
+        const dismissedIds: string[] = dismissedRaw
+          ? JSON.parse(dismissedRaw)
+          : [];
+        const visibleLogs = logsData.filter(
+          (log: any) => !dismissedIds.includes(log._id || log.id)
+        );
 
         setNotifications(visibleLogs);
         setUnreadCount(visibleLogs.length);
@@ -117,10 +149,15 @@ export default function Topbar() {
     const dismissedIds: string[] = dismissedRaw ? JSON.parse(dismissedRaw) : [];
     if (id && !dismissedIds.includes(id)) {
       dismissedIds.push(id);
-      localStorage.setItem("admin_dismissed_notifications", JSON.stringify(dismissedIds));
+      localStorage.setItem(
+        "admin_dismissed_notifications",
+        JSON.stringify(dismissedIds)
+      );
     }
-    setNotifications(prev => prev.filter((log: any) => (log._id || log.id) !== id));
-    setUnreadCount(prev => Math.max(0, prev - 1));
+    setNotifications((prev) =>
+      prev.filter((log: any) => (log._id || log.id) !== id)
+    );
+    setUnreadCount((prev) => Math.max(0, prev - 1));
   };
 
   const handleMarkAllAsRead = () => {
@@ -134,7 +171,10 @@ export default function Topbar() {
       }
     });
 
-    localStorage.setItem("admin_dismissed_notifications", JSON.stringify(dismissedIds));
+    localStorage.setItem(
+      "admin_dismissed_notifications",
+      JSON.stringify(dismissedIds)
+    );
     setNotifications([]);
     setUnreadCount(0);
   };
@@ -159,21 +199,35 @@ export default function Topbar() {
   };
 
   return (
-    <header className="fixed top-0 right-0 left-0 md:left-[260px] h-16 z-40 glass-nav flex items-center justify-between px-4 md:px-6">
-      <div className="flex items-center gap-3 w-full max-w-sm">
+    <header className="fixed left-0 right-0 top-0 z-40 flex h-16 items-center justify-between gap-3 px-4 glass-nav md:left-[260px] md:px-6">
+      <div className="flex min-w-0 flex-1 items-center gap-3">
         <button
           onClick={toggleSidebar}
-          className="md:hidden flex-shrink-0 w-9 h-9 flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-white/[0.06] rounded-lg transition-colors cursor-pointer active:scale-95"
+          className="flex h-9 w-9 flex-shrink-0 cursor-pointer items-center justify-center rounded-xl text-on-surface-variant transition-colors hover:bg-[#FFF0F6] hover:text-on-surface active:scale-95 md:hidden"
           title="Toggle Menu"
+          aria-label="Toggle menu"
         >
-          <Menu className="w-5 h-5" />
+          <Menu className="h-5 w-5" />
         </button>
 
-        <form onSubmit={handleSearchSubmit} className="w-full relative" ref={dropdownRef}>
-          <div className="flex items-center bg-white/[0.04] px-3.5 py-1.5 rounded-lg border border-white/[0.08] w-full transition-all focus-within:border-primary focus-within:ring-4 focus-within:ring-ring">
-            <Search className="text-on-surface-muted w-4 h-4 mr-2" />
+        <div className="hidden min-w-0 sm:block">
+          <p className="truncate text-sm font-semibold tracking-tight text-on-surface">
+            {pageTitle}
+          </p>
+          <p className="truncate text-[10px] font-medium text-on-surface-muted">
+            Soul Discovery Admin
+          </p>
+        </div>
+
+        <form
+          onSubmit={handleSearchSubmit}
+          className="relative w-full max-w-sm sm:ml-2"
+          ref={dropdownRef}
+        >
+          <div className="flex w-full items-center rounded-full border border-border bg-white/80 px-3.5 py-1.5 shadow-xs transition-all focus-within:border-primary focus-within:ring-4 focus-within:ring-ring">
+            <Search className="mr-2 h-4 w-4 text-on-surface-muted" />
             <input
-              className="bg-transparent border-none focus:ring-0 text-sm w-full placeholder:text-on-surface-muted text-on-surface outline-none"
+              className="w-full border-none bg-transparent text-sm text-on-surface outline-none placeholder:text-on-surface-muted focus:ring-0"
               placeholder="Search patients or sessions..."
               type="text"
               value={searchQuery}
@@ -181,18 +235,21 @@ export default function Topbar() {
               onFocus={() => {
                 if (searchQuery.trim()) setShowDropdown(true);
               }}
+              aria-label="Search patients or sessions"
             />
           </div>
 
           {showDropdown && (
-            <div className="absolute left-0 right-0 top-full mt-2 glass-panel-strong rounded-xl overflow-hidden z-50 py-2 max-h-[380px] overflow-y-auto">
+            <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-[380px] overflow-hidden overflow-y-auto rounded-xl py-2 glass-panel-strong">
               {isSearching ? (
-                <div className="flex items-center justify-center py-6 text-xs text-on-surface-muted gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                <div className="flex items-center justify-center gap-2 py-6 text-xs text-on-surface-muted">
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
                   Searching database...
                 </div>
-              ) : !searchResults || (searchResults.users.length === 0 && searchResults.sessions.length === 0) ? (
-                <div className="text-center py-6 text-xs text-on-surface-muted">
+              ) : !searchResults ||
+                (searchResults.users.length === 0 &&
+                  searchResults.sessions.length === 0) ? (
+                <div className="py-6 text-center text-xs text-on-surface-muted">
                   No matching patients or sessions found.
                 </div>
               ) : (
@@ -205,22 +262,34 @@ export default function Topbar() {
                           <div
                             key={user._id || user.id}
                             onClick={() => {
-                              router.push(`/users?search=${encodeURIComponent(user.name)}`);
+                              router.push(
+                                `/users?search=${encodeURIComponent(user.name)}`
+                              );
                               setShowDropdown(false);
                               setSearchQuery("");
                             }}
-                            className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[rgba(179,132,201,0.05)] cursor-pointer transition-colors"
+                            className="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 transition-colors hover:bg-[#FFF0F6]"
                           >
-                            <div className="w-7 h-7 rounded-full bg-primary-container flex items-center justify-center text-primary text-xs font-bold overflow-hidden flex-shrink-0">
+                            <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-container text-xs font-bold text-primary">
                               {user.profileImage ? (
-                                <AvatarImage src={user.profileImage} alt={user.name} width={32} height={32} className="w-full h-full object-cover" />
+                                <AvatarImage
+                                  src={user.profileImage}
+                                  alt={user.name}
+                                  width={32}
+                                  height={32}
+                                  className="h-full w-full object-cover"
+                                />
                               ) : (
                                 user.name.charAt(0).toUpperCase()
                               )}
                             </div>
                             <div className="overflow-hidden">
-                              <p className="text-xs text-on-surface font-semibold truncate">{user.name}</p>
-                              <p className="text-[10px] text-on-surface-muted truncate">{user.email}</p>
+                              <p className="truncate text-xs font-semibold text-on-surface">
+                                {user.name}
+                              </p>
+                              <p className="truncate text-[10px] text-on-surface-muted">
+                                {user.email}
+                              </p>
                             </div>
                           </div>
                         ))}
@@ -230,25 +299,36 @@ export default function Topbar() {
 
                   {searchResults.sessions.length > 0 && (
                     <div>
-                      <div className="px-3 py-1 label-eyebrow border-t border-border pt-3">Therapy Sessions</div>
+                      <div className="label-eyebrow border-t border-border px-3 py-1 pt-3">
+                        Therapy Sessions
+                      </div>
                       <div className="mt-1 space-y-0.5">
                         {searchResults.sessions.map((session) => (
                           <div
                             key={session.sessionId}
                             onClick={() => {
-                              router.push(`/sessions?search=${encodeURIComponent(session.userName)}`);
+                              router.push(
+                                `/sessions?search=${encodeURIComponent(
+                                  session.userName
+                                )}`
+                              );
                               setShowDropdown(false);
                               setSearchQuery("");
                             }}
-                            className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[rgba(179,132,201,0.05)] cursor-pointer transition-colors"
+                            className="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 transition-colors hover:bg-[#FFF0F6]"
                           >
-                            <div className="w-7 h-7 rounded-lg bg-surface-container-high flex items-center justify-center flex-shrink-0">
-                              <span className="material-symbols-outlined text-[16px] text-primary">chat</span>
+                            <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-xl bg-surface-container-high">
+                              <span className="material-symbols-outlined text-[16px] text-primary">
+                                chat
+                              </span>
                             </div>
                             <div className="overflow-hidden">
-                              <p className="text-xs text-on-surface font-semibold truncate">Session with {session.userName}</p>
-                              <p className="text-[10px] text-on-surface-muted truncate font-mono">
-                                ID: {session.sessionId.substring(0, 8)}... • {session.duration || "N/A"}
+                              <p className="truncate text-xs font-semibold text-on-surface">
+                                Session with {session.userName}
+                              </p>
+                              <p className="truncate font-mono text-[10px] text-on-surface-muted">
+                                ID: {session.sessionId.substring(0, 8)}... •{" "}
+                                {session.duration || "N/A"}
                               </p>
                             </div>
                           </div>
@@ -263,39 +343,45 @@ export default function Topbar() {
         </form>
       </div>
 
-      <div className="flex items-center gap-2.5">
+      <div className="flex flex-shrink-0 items-center gap-2.5">
         <div className="relative" ref={notifDropdownRef}>
           <button
             onClick={() => {
               setShowNotifDropdown(!showNotifDropdown);
             }}
-            className="w-9 h-9 flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-white/[0.06] rounded-lg transition-colors cursor-pointer active:scale-95 border border-white/[0.08] relative"
+            className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-border bg-white/70 text-on-surface-variant transition-colors hover:bg-[#FFF0F6] hover:text-on-surface active:scale-95"
             title="Notifications"
+            aria-label="Notifications"
+            aria-expanded={showNotifDropdown}
           >
-            <Bell className="w-4 h-4 text-primary" />
+            <Bell className="h-4 w-4 text-primary" />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-error animate-pulse border-2 border-[#0c0819]" />
+              <span className="absolute right-1 top-1 h-2.5 w-2.5 animate-pulse rounded-full border-2 border-white bg-error" />
             )}
           </button>
 
           {showNotifDropdown && (
-            <div className="absolute right-0 top-full z-50 mt-2 w-[min(20rem,calc(100vw-1.5rem))] overflow-hidden rounded-xl glass-panel-strong py-2 sm:w-96">
-              <div className="px-4 py-2.5 border-b border-white/[0.08] flex justify-between items-center bg-white/[0.03]">
-                <span className="text-xs font-semibold text-on-surface">Notifications</span>
+            <div className="absolute right-0 top-full z-50 mt-2 w-[min(20rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl py-2 glass-panel-strong sm:w-96">
+              <div className="flex items-center justify-between border-b border-border bg-[#FFF8FB] px-4 py-2.5">
+                <span className="text-xs font-semibold text-on-surface">
+                  Notifications
+                </span>
                 {notifications.length > 0 && (
                   <button
                     onClick={handleMarkAllAsRead}
-                    className="text-[10px] text-primary hover:underline font-semibold"
+                    className="text-[10px] font-semibold text-primary hover:underline"
                   >
                     Mark all read
                   </button>
                 )}
               </div>
 
-              <div className="max-h-[300px] overflow-y-auto divide-y divide-border">
+              <div className="max-h-[300px] divide-y divide-border overflow-y-auto">
                 {notifications.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-8 text-xs text-on-surface-muted gap-1 text-center">
-                    <span className="material-symbols-outlined text-[28px] text-on-surface-muted/40">notifications_off</span>
+                  <div className="flex flex-col items-center justify-center gap-1 py-8 text-center text-xs text-on-surface-muted">
+                    <span className="material-symbols-outlined text-[28px] text-on-surface-muted/40">
+                      notifications_off
+                    </span>
                     <span>No active notifications</span>
                   </div>
                 ) : (
@@ -326,18 +412,22 @@ export default function Topbar() {
                       <div
                         key={log._id || log.id}
                         onClick={() => handleNotificationClick(log)}
-                        className="p-3 hover:bg-[rgba(179,132,201,0.05)] cursor-pointer transition-colors flex gap-3 items-start"
+                        className="flex cursor-pointer items-start gap-3 p-3 transition-colors hover:bg-[#FFF0F6]"
                       >
-                        <div className={`w-8 h-8 rounded-lg ${bgIconColor} flex items-center justify-center flex-shrink-0 border border-border`}>
-                          <span className={`material-symbols-outlined text-[16px] ${iconColor}`}>
+                        <div
+                          className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-border ${bgIconColor}`}
+                        >
+                          <span
+                            className={`material-symbols-outlined text-[16px] ${iconColor}`}
+                          >
                             {NotifIcon}
                           </span>
                         </div>
-                        <div className="overflow-hidden flex-1">
-                          <p className="text-xs text-on-surface font-normal leading-normal line-clamp-2">
+                        <div className="flex-1 overflow-hidden">
+                          <p className="line-clamp-2 text-xs font-normal leading-normal text-on-surface">
                             {log.description}
                           </p>
-                          <span className="text-[9px] text-on-surface-muted mt-1 block">
+                          <span className="mt-1 block text-[9px] text-on-surface-muted">
                             {timeAgo(log.timestamp)}
                           </span>
                         </div>

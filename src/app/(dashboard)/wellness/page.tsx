@@ -6,6 +6,7 @@ import { wellnessService } from "@/services/wellnessService";
 import { Drawer } from "@/components/ui/Drawer";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/providers";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 export default function WellnessPage() {
   const [search, setSearch] = useState("");
@@ -47,13 +48,11 @@ export default function WellnessPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full font-inter text-on-surface">
-      <div>
-        <h2 className="text-xl font-medium tracking-tight text-on-surface">Wellness Plans</h2>
-        <p className="text-xs text-on-surface-variant/80 mt-1">
-          Track user enrollments, completion rates, and plan progress.
-        </p>
-      </div>
+    <div className="flex flex-col gap-4 w-full font-sans text-on-surface">
+      <PageHeader
+        title="Wellness Plans"
+        description="Track user enrollments, completion rates, and plan progress."
+      />
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {[
@@ -73,12 +72,12 @@ export default function WellnessPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 card p-4">
-        <div className="relative rounded bg-surface-dim border border-outline-variant">
+        <div className="field-shell">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/80 text-lg">
             search
           </span>
           <input
-            className="w-full bg-transparent border-none py-2.5 pl-11 pr-4 text-xs outline-none"
+            className="field-input py-2.5 pl-11 pr-4 text-xs"
             placeholder="Search user, plan, goal..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -90,7 +89,7 @@ export default function WellnessPage() {
             setStatus(e.target.value);
             setPage(1);
           }}
-          className="rounded bg-surface-dim border border-outline-variant py-2.5 px-3 text-xs outline-none"
+          className="field-select text-xs"
         >
           <option value="all">All statuses</option>
           <option value="active">Active</option>
@@ -102,17 +101,17 @@ export default function WellnessPage() {
       <div className="card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] text-left">
-            <thead className="bg-white/[0.04] border-b border-white/[0.06]">
+            <thead className="admin-table-head">
               <tr>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">User</th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">Plan</th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">Status</th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">Progress</th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">Streak</th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">Updated</th>
+                <th className="table-head-cell px-6">User</th>
+                <th className="table-head-cell px-6">Plan</th>
+                <th className="table-head-cell px-6">Status</th>
+                <th className="table-head-cell px-6">Progress</th>
+                <th className="table-head-cell px-6">Streak</th>
+                <th className="table-head-cell px-6">Updated</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.06]">
+            <tbody className="divide-y divide-border">
               {isLoading ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-xs text-on-surface-variant/70">
@@ -129,7 +128,7 @@ export default function WellnessPage() {
                 plans.map((plan) => (
                   <tr
                     key={plan._id}
-                    className="hover:bg-[rgba(179,132,201,0.05)] cursor-pointer"
+                    className="hover:bg-[#FFF0F6] cursor-pointer"
                     onClick={() => openDetail(plan)}
                   >
                     <td className="px-6 py-4">
@@ -143,7 +142,13 @@ export default function WellnessPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+                      <span className={`badge uppercase tracking-wider text-[10px] ${
+                        plan.status === "completed"
+                          ? "badge-success"
+                          : plan.status === "paused"
+                          ? "badge-warning"
+                          : "badge-primary"
+                      }`}>
                         {plan.status}
                       </span>
                     </td>

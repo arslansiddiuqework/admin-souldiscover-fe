@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/providers";
 import { useSearchParams } from "next/navigation";
 import { AvatarImage } from "@/components/ui/avatar-image";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 function hasActiveAlert(user: any) {
   const risk = user?.lastEscalation?.riskLevel;
@@ -93,20 +94,18 @@ export default function UsersPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full font-inter text-on-surface">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-        <div>
-          <h2 className="text-xl font-medium tracking-tight text-on-surface">Users</h2>
-          <p className="text-xs text-on-surface-variant/80 mt-1">Manage all registered user accounts.</p>
-        </div>
-      </div>
+    <div className="flex flex-col gap-4 w-full font-sans text-on-surface">
+      <PageHeader
+        title="Users"
+        description="Manage all registered user accounts."
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 card p-4">
-        <div className="relative rounded bg-surface-dim border border-outline-variant transition-all focus-within:border-primary">
+        <div className="field-shell">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/80 text-lg">search</span>
           <input
             type="text"
-            className="w-full bg-transparent border-none py-2.5 pl-11 pr-4 text-xs text-on-surface placeholder-surface-variant focus:ring-0 outline-none"
+            className="field-input py-2.5 pl-11 pr-4 text-xs"
             placeholder="Search by name, email..."
             value={search}
             onChange={(e) => {
@@ -121,7 +120,7 @@ export default function UsersPage() {
             setStatus(e.target.value);
             setPage(1);
           }}
-          className="rounded bg-surface-dim border border-outline-variant py-2.5 px-3 text-xs outline-none"
+          className="field-select text-xs"
         >
           <option value="all">All statuses</option>
           <option value="active">Active</option>
@@ -132,16 +131,16 @@ export default function UsersPage() {
       <div className="card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[800px] text-left">
-            <thead className="bg-white/[0.04] border-b border-white/[0.06]">
+            <thead className="admin-table-head">
               <tr>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">User</th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">Status</th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">Emergency</th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">Registered</th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold text-right">Actions</th>
+                <th className="table-head-cell px-6">User</th>
+                <th className="table-head-cell px-6">Status</th>
+                <th className="table-head-cell px-6">Emergency</th>
+                <th className="table-head-cell px-6">Registered</th>
+                <th className="table-head-cell px-6 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.06]">
+            <tbody className="divide-y divide-border">
               {isLoading ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-8 text-center text-xs text-on-surface-variant/70">
@@ -158,7 +157,7 @@ export default function UsersPage() {
                 users.map((user: any) => (
                   <tr
                     key={user._id}
-                    className="hover:bg-[rgba(179,132,201,0.05)] transition-colors cursor-pointer group"
+                    className="hover:bg-[#FFF0F6] transition-colors cursor-pointer group"
                     onClick={() => openUser(user)}
                   >
                     <td className="px-6 py-4">
@@ -180,11 +179,11 @@ export default function UsersPage() {
                     </td>
                     <td className="px-6 py-4">
                       {user.status === "suspended" ? (
-                        <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-error/10 text-error border border-error/20">
+                        <span className="badge badge-error uppercase tracking-wider text-[10px]">
                           suspended
                         </span>
                       ) : (
-                        <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+                        <span className="badge badge-success uppercase tracking-wider text-[10px]">
                           active
                         </span>
                       )}
@@ -235,7 +234,7 @@ export default function UsersPage() {
           </table>
         </div>
 
-        <div className="px-6 py-4 bg-surface-dim/50 border-t border-border flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between font-inter text-xs">
+        <div className="px-6 py-4 bg-surface-dim/50 border-t border-border flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between font-sans text-xs">
           <span className="text-on-surface-variant/80">
             Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
           </span>
@@ -274,7 +273,7 @@ export default function UsersPage() {
         }
         subtitle={`User ID: ${selectedUser?._id || "N/A"}`}
       >
-        <div className="space-y-6 font-inter text-xs text-on-surface">
+        <div className="space-y-6 font-sans text-xs text-on-surface">
           {detailLoading && (
             <p className="text-on-surface-variant/70">Loading full profile...</p>
           )}
@@ -299,10 +298,10 @@ export default function UsersPage() {
                     showToast(err.response?.data?.message || "Failed to update status", "error");
                   }
                 }}
-                className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded border outline-none cursor-pointer bg-surface-dim ${
+                className={`field-select text-[10px] font-semibold uppercase tracking-wider py-1 w-auto min-w-[7rem] ${
                   (selectedUser?.status || "active") === "suspended"
-                    ? "text-error border-error/30 focus:ring-error"
-                    : "text-primary border-primary/30 focus:ring-primary"
+                    ? "text-error border-error/30"
+                    : "text-primary border-primary/30"
                 }`}
               >
                 <option value="active">Active</option>
@@ -365,8 +364,100 @@ export default function UsersPage() {
                 <span className="text-on-surface-variant/80">Consultations</span>
                 <span>{userDetail?.consultations?.length ?? "—"}</span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-on-surface-variant/80">Assessments</span>
+                <span>{userDetail?.assessments?.totalCompletions ?? "—"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-on-surface-variant/80">Assessments in progress</span>
+                <span>{userDetail?.assessments?.inProgressSessions ?? "—"}</span>
+              </div>
             </div>
           </div>
+
+          {userDetail?.mood?.recent?.length > 0 && (
+            <div>
+              <h4 className="text-[10px] uppercase font-semibold tracking-wider text-on-surface-variant/80 mb-2">
+                Recent Mood
+              </h4>
+              <div className="bg-surface-dim p-4 rounded-xl border border-border space-y-2">
+                {userDetail.mood.recent.map((m: any, idx: number) => (
+                  <div key={idx} className="flex justify-between text-[11px]">
+                    <span>
+                      {m.mood || "Check-in"} · {m.score}/100
+                    </span>
+                    <span className="text-on-surface-variant/70">
+                      {m.timestamp ? new Date(m.timestamp).toLocaleDateString() : "—"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {userDetail?.activity?.recent?.length > 0 && (
+            <div>
+              <h4 className="text-[10px] uppercase font-semibold tracking-wider text-on-surface-variant/80 mb-2">
+                Recent Activity
+              </h4>
+              <div className="bg-surface-dim p-4 rounded-xl border border-border space-y-2">
+                {userDetail.activity.recent.map((a: any, idx: number) => (
+                  <div key={idx} className="flex justify-between text-[11px]">
+                    <span>
+                      {a.name || a.type}
+                      {a.completed ? "" : " · open"}
+                    </span>
+                    <span className="text-on-surface-variant/70">
+                      {a.timestamp ? new Date(a.timestamp).toLocaleDateString() : "—"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {userDetail?.assessments?.recent?.length > 0 && (
+            <div>
+              <h4 className="text-[10px] uppercase font-semibold tracking-wider text-on-surface-variant/80 mb-2">
+                Assessment Completions
+              </h4>
+              <div className="bg-surface-dim p-4 rounded-xl border border-border space-y-2">
+                {userDetail.assessments.recent.map((r: any) => (
+                  <div key={r.resultId} className="flex justify-between gap-3 text-[11px]">
+                    <div className="min-w-0">
+                      <div className="font-semibold truncate">{r.title}</div>
+                      <div className="text-on-surface-variant/70">
+                        {r.interpretationLabel || r.scoringMethod || "Completed"}
+                      </div>
+                    </div>
+                    <span className="shrink-0 text-on-surface-variant/70">
+                      {r.completedAt
+                        ? new Date(r.completedAt).toLocaleDateString()
+                        : "—"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {userDetail?.sessions?.length > 0 && (
+            <div>
+              <h4 className="text-[10px] uppercase font-semibold tracking-wider text-on-surface-variant/80 mb-2">
+                Recent Therapy Sessions
+              </h4>
+              <div className="bg-surface-dim p-4 rounded-xl border border-border space-y-2">
+                {userDetail.sessions.slice(0, 8).map((s: any) => (
+                  <div key={s.sessionId} className="flex justify-between text-[11px]">
+                    <span className="truncate">{s.title || "Session"}</span>
+                    <span className="text-on-surface-variant/70 capitalize">
+                      {s.status} · {s.messageCount} msgs
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {userDetail?.emergencyContacts?.length > 0 && (
             <div>

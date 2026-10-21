@@ -3,8 +3,17 @@
 import React from "react";
 import Link from "next/link";
 import { useAnalytics } from "@/hooks/useAnalytics";
+import { PageHeader } from "@/components/layout/PageHeader";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+
+/** Brand orchid #B74783 */
+const BRAND_ORCHID: [number, number, number] = [183, 71, 131];
+const BRAND_INK: [number, number, number] = [73, 38, 61];
+const BRAND_MUTED: [number, number, number] = [121, 90, 112];
+const BRAND_SOFT_BG: [number, number, number] = [255, 248, 251];
+const BRAND_BORDER: [number, number, number] = [234, 220, 229];
+const BRAND_ALT_ROW: [number, number, number] = [247, 232, 243];
 
 const formatNumber = (value: number) => value.toLocaleString();
 
@@ -28,9 +37,9 @@ const addSectionTitle = (doc: jsPDF, title: string, y: number) => {
   const safeY = ensurePageSpace(doc, y, 12);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
-  doc.setTextColor(11, 15, 16);
+  doc.setTextColor(...BRAND_INK);
   doc.text(title, 14, safeY);
-  doc.setDrawColor(103, 61, 230);
+  doc.setDrawColor(...BRAND_ORCHID);
   doc.setLineWidth(0.8);
   doc.line(14, safeY + 3, 196, safeY + 3);
   return safeY + 9;
@@ -50,23 +59,23 @@ const addMetricCard = (
   title: string,
   value: string,
   note: string,
-  accent: [number, number, number] = [103, 61, 230]
+  accent: [number, number, number] = BRAND_ORCHID
 ) => {
-  doc.setFillColor(248, 250, 249);
-  doc.setDrawColor(220, 227, 224);
+  doc.setFillColor(...BRAND_SOFT_BG);
+  doc.setDrawColor(...BRAND_BORDER);
   doc.roundedRect(x, y, width, 24, 2, 2, "FD");
   doc.setFillColor(...accent);
   doc.rect(x, y, 2, 24, "F");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
-  doc.setTextColor(80, 88, 86);
+  doc.setTextColor(...BRAND_MUTED);
   doc.text(title.toUpperCase(), x + 5, y + 6);
   doc.setFontSize(14);
-  doc.setTextColor(11, 15, 16);
+  doc.setTextColor(...BRAND_INK);
   doc.text(value, x + 5, y + 14);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
-  doc.setTextColor(95, 105, 102);
+  doc.setTextColor(...BRAND_MUTED);
   doc.text(doc.splitTextToSize(note, width - 8), x + 5, y + 20);
 };
 
@@ -98,7 +107,7 @@ export default function AnalyticsPage() {
     ];
 
     // Header
-    doc.setFillColor(11, 15, 16);
+    doc.setFillColor(...BRAND_ORCHID);
     doc.rect(0, 0, 210, 38, "F");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(24);
@@ -107,7 +116,7 @@ export default function AnalyticsPage() {
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
-    doc.setTextColor(218, 226, 222);
+    doc.setTextColor(255, 240, 246);
     doc.text("Weekly Operational Impact Report", 14, 26);
     doc.setFontSize(10);
     doc.text(`Report period: ${reportPeriod}`, 14, 32);
@@ -117,12 +126,12 @@ export default function AnalyticsPage() {
     let y = 50;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
-    doc.setTextColor(11, 15, 16);
+    doc.setTextColor(...BRAND_INK);
     doc.text("Executive Summary", 14, y);
     y += 8;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
-    doc.setTextColor(70, 78, 76);
+    doc.setTextColor(...BRAND_MUTED);
     const summaryText = metrics.outcomeTrackedUsers > 0
       ? `Soul Discovery supported ${formatNumber(metrics.weeklyActiveUsers)} active user(s) this week across ${formatNumber(metrics.weeklySessions)} therapy session(s), ${formatNumber(metrics.weeklyMessageCount)} chat message(s), and ${formatNumber(metrics.weeklyActivities)} logged therapeutic activity item(s). Based on users with at least two mood check-ins this week, ${formatNumber(metrics.benefitedUsersThisWeek)} user(s) showed measurable benefit, while ${formatNumber(metrics.notRecoveredUsersThisWeek)} user(s) are not recovered and should be prioritized for follow-up.`
       : `Soul Discovery supported ${formatNumber(metrics.weeklyActiveUsers)} active user(s) this week across ${formatNumber(metrics.weeklySessions)} therapy session(s), ${formatNumber(metrics.weeklyMessageCount)} chat message(s), and ${formatNumber(metrics.weeklyActivities)} logged therapeutic activity item(s). No users had enough mood check-ins for reliable weekly outcome classification, so recovery metrics should be treated as unavailable rather than zero-impact.`;
@@ -138,9 +147,9 @@ export default function AnalyticsPage() {
     y = addSectionTitle(doc, "Weekly Impact Outcomes", y);
     autoTable(doc, {
       startY: y,
-      headStyles: { fillColor: [103, 61, 230], textColor: [255, 255, 255], fontStyle: "bold" },
-      bodyStyles: { textColor: [50, 50, 50] },
-      alternateRowStyles: { fillColor: [245, 245, 245] },
+      headStyles: { fillColor: BRAND_ORCHID, textColor: [255, 255, 255], fontStyle: "bold" },
+      bodyStyles: { textColor: BRAND_INK },
+      alternateRowStyles: { fillColor: BRAND_ALT_ROW },
       styles: { fontSize: 8, cellPadding: 2.2 },
       head: [["Outcome", "Value", "How to read it"]],
       body: [
@@ -157,9 +166,9 @@ export default function AnalyticsPage() {
     y = addSectionTitle(doc, "System Usage", y);
     autoTable(doc, {
       startY: y,
-      headStyles: { fillColor: [103, 61, 230], textColor: [255, 255, 255], fontStyle: "bold" },
-      bodyStyles: { textColor: [50, 50, 50] },
-      alternateRowStyles: { fillColor: [245, 245, 245] },
+      headStyles: { fillColor: BRAND_ORCHID, textColor: [255, 255, 255], fontStyle: "bold" },
+      bodyStyles: { textColor: BRAND_INK },
+      alternateRowStyles: { fillColor: BRAND_ALT_ROW },
       styles: { fontSize: 8, cellPadding: 2.2 },
       head: [["Metric", "All time", "This week", "Notes"]],
       body: [
@@ -176,9 +185,9 @@ export default function AnalyticsPage() {
     y = addSectionTitle(doc, "Mood, Recovery, and Safety", y);
     autoTable(doc, {
       startY: y,
-      headStyles: { fillColor: [103, 61, 230], textColor: [255, 255, 255], fontStyle: "bold" },
-      bodyStyles: { textColor: [50, 50, 50] },
-      alternateRowStyles: { fillColor: [245, 245, 245] },
+      headStyles: { fillColor: BRAND_ORCHID, textColor: [255, 255, 255], fontStyle: "bold" },
+      bodyStyles: { textColor: BRAND_INK },
+      alternateRowStyles: { fillColor: BRAND_ALT_ROW },
       styles: { fontSize: 8, cellPadding: 2.2 },
       head: [["Area", "Value", "Operational meaning"]],
       body: [
@@ -194,9 +203,9 @@ export default function AnalyticsPage() {
     y = addSectionTitle(doc, "Therapeutic Activity Breakdown", y);
     autoTable(doc, {
       startY: y,
-      headStyles: { fillColor: [103, 61, 230], textColor: [255, 255, 255], fontStyle: "bold" },
-      bodyStyles: { textColor: [50, 50, 50] },
-      alternateRowStyles: { fillColor: [245, 245, 245] },
+      headStyles: { fillColor: BRAND_ORCHID, textColor: [255, 255, 255], fontStyle: "bold" },
+      bodyStyles: { textColor: BRAND_INK },
+      alternateRowStyles: { fillColor: BRAND_ALT_ROW },
       styles: { fontSize: 8, cellPadding: 2.2 },
       head: [["Activity type", "Logged", "Completed", "Minutes"]],
       body: trends.activityBreakdown.length
@@ -213,10 +222,10 @@ export default function AnalyticsPage() {
     y = addSectionTitle(doc, "Recommended Admin Actions", y);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8.5);
-    doc.setTextColor(50, 58, 56);
+    doc.setTextColor(...BRAND_INK);
     recommendations.forEach((item) => {
       y = ensurePageSpace(doc, y, 12);
-      doc.setFillColor(103, 61, 230);
+      doc.setFillColor(...BRAND_ORCHID);
       doc.circle(16, y - 1.5, 1.2, "F");
       y = addWrappedText(doc, item, 20, y, 176, 5) + 2;
     });
@@ -225,7 +234,7 @@ export default function AnalyticsPage() {
     y = addSectionTitle(doc, "Data Definitions", y);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    doc.setTextColor(70, 78, 76);
+    doc.setTextColor(...BRAND_MUTED);
     const definitions = [
       "Benefited users: users with at least two mood check-ins this week whose latest score improved by 5 or more points from their first weekly score.",
       "Not recovered users: tracked users whose latest weekly mood score remains below 50 and whose mood did not improve by at least 5 points.",
@@ -242,7 +251,7 @@ export default function AnalyticsPage() {
       doc.setPage(page);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
-      doc.setTextColor(120, 128, 126);
+      doc.setTextColor(...BRAND_MUTED);
       doc.text(`Soul Discovery Analytics Report - Page ${page} of ${totalPages}`, 14, 288);
       doc.text("Generated from live admin analytics data", 145, 288);
     }
@@ -252,7 +261,7 @@ export default function AnalyticsPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 animate-pulse font-inter text-on-surface">
+      <div className="space-y-6 animate-pulse font-sans text-on-surface">
         <div className="h-10 w-64 bg-surface rounded-lg" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
@@ -311,6 +320,11 @@ export default function AnalyticsPage() {
       value: metrics.totalActivities,
       description: `${metrics.weeklyActivityCompletionRate}% weekly completion`,
     },
+    {
+      label: "Assessment Completions",
+      value: metrics.totalAssessmentCompletions || 0,
+      description: `${metrics.assessmentCompletionsThisWeek || 0} this week · ${metrics.assessmentInProgressSessions || 0} in progress`,
+    },
   ];
 
   const screenMoodCoverage = metrics.totalUsers > 0
@@ -341,29 +355,23 @@ export default function AnalyticsPage() {
   ];
 
   return (
-    <div className="flex-1 flex flex-col gap-4 w-full font-inter text-on-surface">
+    <div className="flex-1 flex flex-col gap-4 w-full font-sans text-on-surface">
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-4">
-        <div>
-          <h2 className="text-xl font-medium tracking-tight text-on-surface">
-            Operational Analytics
-          </h2>
-          <p className="text-xs text-on-surface-variant/80 mt-1.5">
-            System usage, therapy activity, and emergency overview.
-          </p>
-        </div>
-
-        <button
-          onClick={exportToPDF}
-          className="flex items-center gap-2 px-4 py-2 border border-outline-variant rounded-lg text-xs font-semibold text-on-surface hover:bg-surface-container-highest transition-colors"
-        >
-          <span className="material-symbols-outlined text-[16px]">
-            picture_as_pdf
-          </span>
-          Download PDF Report
-        </button>
-      </div>
+      <PageHeader
+        title="Operational Analytics"
+        description="System usage, therapy activity, and emergency overview."
+        actions={
+          <button
+            onClick={exportToPDF}
+            className="flex items-center gap-2 px-4 py-2 border border-border rounded-full text-xs font-semibold text-on-surface hover:bg-surface-variant transition-colors"
+          >
+            <span className="material-symbols-outlined text-[16px]">
+              picture_as_pdf
+            </span>
+            Download PDF Report
+          </button>
+        }
+      />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -488,6 +496,36 @@ export default function AnalyticsPage() {
               ))
             )}
           </div>
+        </div>
+      </div>
+
+      <div className="card p-6">
+        <h3 className="text-lg font-semibold text-on-surface mb-4">
+          Assessment Completions (30 days)
+        </h3>
+        <div className="space-y-3">
+          {(trends.assessmentsBySlug || []).length === 0 ? (
+            <p className="text-xs text-on-surface-variant/65">
+              No assessment completions in the last 30 days.
+            </p>
+          ) : (
+            (trends.assessmentsBySlug || []).map((item: any, index: number) => (
+              <div
+                key={item.slug || index}
+                className="flex justify-between items-center border-b border-border pb-2 last:border-0"
+              >
+                <div>
+                  <div className="text-sm font-medium text-on-surface">
+                    {item.title || item.slug}
+                  </div>
+                  <div className="text-[11px] text-on-surface-variant/70">{item.slug}</div>
+                </div>
+                <div className="text-xs font-semibold text-on-surface">
+                  {formatNumber(item.count)}
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 

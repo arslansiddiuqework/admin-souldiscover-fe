@@ -84,11 +84,11 @@ const config: Config = {
       },
 
       fontFamily: {
-        sans: ["var(--font-inter)", "ui-sans-serif", "system-ui", "sans-serif"],
-        inter: ["var(--font-inter)", "sans-serif"],
-        display: ["var(--font-jakarta)", "var(--font-inter)", "sans-serif"],
-        // Retained alias so pre-existing `font-hanken` markup keeps working.
-        hanken: ["var(--font-jakarta)", "var(--font-inter)", "sans-serif"],
+        sans: ["var(--font-quicksand)", "ui-sans-serif", "system-ui", "sans-serif"],
+        // Alias legacy class names to Quicksand so pages stay consistent.
+        inter: ["var(--font-quicksand)", "sans-serif"],
+        display: ["var(--font-quicksand)", "sans-serif"],
+        hanken: ["var(--font-quicksand)", "sans-serif"],
         mono: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
 

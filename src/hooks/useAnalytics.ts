@@ -44,6 +44,11 @@ export function useAnalytics() {
     scheduledConsultations: 0,
     completedConsultations: 0,
     upcomingConsultations: 0,
+    totalAssessmentCompletions: 0,
+    assessmentCompletionsThisWeek: 0,
+    assessmentCompletionsThisMonth: 0,
+    assessmentInProgressSessions: 0,
+    assessmentAbandonedSessions: 0,
   };
 
   const defaultTrends: AnalyticsTrends = {
@@ -52,6 +57,7 @@ export function useAnalytics() {
     emergencyTrends: [],
     activityBreakdown: [],
     wellnessByGoal: [],
+    assessmentsBySlug: [],
   };
 
   return {

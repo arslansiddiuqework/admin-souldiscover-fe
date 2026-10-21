@@ -1,12 +1,19 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useAssessments } from "@/hooks/useAssessments";
-import { assessmentService } from "@/services/assessmentService";
+import {
+  assessmentService,
+  type AssessmentResultRow,
+} from "@/services/assessmentService";
 import { Drawer } from "@/components/ui/Drawer";
 import { useToast } from "@/components/providers";
+import { PageHeader } from "@/components/layout/PageHeader";
+
+type TabId = "catalog" | "completions";
 
 export default function AssessmentsAdminPage() {
+  const [tab, setTab] = useState<TabId>("catalog");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [status, setStatus] = useState("all");
@@ -14,6 +21,14 @@ export default function AssessmentsAdminPage() {
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const [detail, setDetail] = useState<any | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [results, setResults] = useState<AssessmentResultRow[]>([]);
+  const [resultsPage, setResultsPage] = useState(1);
+  const [resultsTotalPages, setResultsTotalPages] = useState(1);
+  const [resultsLoading, setResultsLoading] = useState(false);
+  const [funnel, setFunnel] = useState({
+    inProgressSessions: 0,
+    abandonedSessions: 0,
+  });
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -31,6 +46,30 @@ export default function AssessmentsAdminPage() {
     limit: 10,
   });
 
+  const loadResults = useCallback(async () => {
+    setResultsLoading(true);
+    try {
+      const data = await assessmentService.getResults({
+        page: resultsPage,
+        limit: 15,
+      });
+      setResults(data.results || []);
+      setResultsTotalPages(data.pagination?.totalPages || 1);
+      setFunnel(
+        data.funnel || { inProgressSessions: 0, abandonedSessions: 0 }
+      );
+    } catch {
+      showToast("Failed to load assessment completions", "error");
+      setResults([]);
+    } finally {
+      setResultsLoading(false);
+    }
+  }, [resultsPage, showToast]);
+
+  useEffect(() => {
+    if (tab === "completions") void loadResults();
+  }, [tab, loadResults]);
+
   const openDetail = async (slug: string) => {
     setSelectedSlug(slug);
     setDetailLoading(true);
@@ -46,16 +85,32 @@ export default function AssessmentsAdminPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full font-inter text-on-surface">
-      <div>
-        <h2 className="text-xl font-medium tracking-tight text-on-surface">
-          Assessment Center
-        </h2>
-        <p className="text-xs text-on-surface-variant/80 mt-1">
-          Manage catalog metadata, publication status, and aggregate usage. Individual mental health
-          responses are not shown here by default. Scoring rule changes require a new instrument
-          version.
-        </p>
+    <div className="flex flex-col gap-4 w-full font-sans text-on-surface">
+      <PageHeader
+        title="Assessment Center"
+        description="Catalog metadata, publication status, and completion tracking. Private answer payloads are not exposed here."
+      />
+
+      <div className="flex gap-2">
+        {(
+          [
+            { id: "catalog" as const, label: "Catalog" },
+            { id: "completions" as const, label: "Completions" },
+          ] as const
+        ).map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => setTab(t.id)}
+            className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
+              tab === t.id
+                ? "bg-primary text-white"
+                : "bg-surface-bright text-on-surface-variant border border-border"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
@@ -75,13 +130,32 @@ export default function AssessmentsAdminPage() {
         ))}
       </div>
 
+      {tab === "completions" && (
+        <div className="grid grid-cols-2 gap-3">
+          <div className="card p-4">
+            <div className="text-[10px] uppercase tracking-wider text-on-surface-variant/70 font-semibold">
+              In progress
+            </div>
+            <div className="text-xl font-bold mt-1">{funnel.inProgressSessions}</div>
+          </div>
+          <div className="card p-4">
+            <div className="text-[10px] uppercase tracking-wider text-on-surface-variant/70 font-semibold">
+              Abandoned
+            </div>
+            <div className="text-xl font-bold mt-1">{funnel.abandonedSessions}</div>
+          </div>
+        </div>
+      )}
+
+      {tab === "catalog" && (
+      <>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 card p-4">
-        <div className="relative rounded bg-surface-dim border border-outline-variant">
+        <div className="field-shell">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/80 text-lg">
             search
           </span>
           <input
-            className="w-full bg-transparent border-none py-2.5 pl-11 pr-4 text-xs outline-none"
+            className="field-input py-2.5 pl-11 pr-4 text-xs"
             placeholder="Search assessments..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -93,7 +167,7 @@ export default function AssessmentsAdminPage() {
             setStatus(e.target.value);
             setPage(1);
           }}
-          className="rounded bg-surface-dim border border-outline-variant py-2.5 px-3 text-xs outline-none"
+          className="field-select text-xs"
         >
           <option value="all">All statuses</option>
           <option value="published">Published</option>
@@ -106,29 +180,17 @@ export default function AssessmentsAdminPage() {
       <div className="card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] text-left">
-            <thead className="bg-white/[0.04] border-b border-white/[0.06]">
+            <thead className="admin-table-head">
               <tr>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">
-                  Assessment
-                </th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">
-                  Version
-                </th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">
-                  Clinical
-                </th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">
-                  Completions
-                </th>
-                <th className="px-6 py-3 text-xs text-on-surface-variant/70 font-semibold">
-                  License
-                </th>
+                <th className="table-head-cell px-6">Assessment</th>
+                <th className="table-head-cell px-6">Status</th>
+                <th className="table-head-cell px-6">Version</th>
+                <th className="table-head-cell px-6">Clinical</th>
+                <th className="table-head-cell px-6">Completions</th>
+                <th className="table-head-cell px-6">License</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.06]">
+            <tbody className="divide-y divide-border">
               {isLoading ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-xs text-on-surface-variant/70">
@@ -145,14 +207,26 @@ export default function AssessmentsAdminPage() {
                 assessments.map((a) => (
                   <tr
                     key={a.id}
-                    className="hover:bg-white/[0.03] cursor-pointer"
+                    className="hover:bg-[#FFF0F6] cursor-pointer"
                     onClick={() => void openDetail(a.slug)}
                   >
                     <td className="px-6 py-4">
                       <div className="text-sm font-medium">{a.title}</div>
                       <div className="text-[11px] text-on-surface-variant/70">{a.slug}</div>
                     </td>
-                    <td className="px-6 py-4 text-xs capitalize">{a.status.replace("_", " ")}</td>
+                    <td className="px-6 py-4">
+                      <span className={`badge capitalize text-[10px] ${
+                        a.status === "published"
+                          ? "badge-success"
+                          : a.status === "coming_soon"
+                          ? "badge-info"
+                          : a.status === "archived"
+                          ? "badge-neutral"
+                          : "badge-warning"
+                      }`}>
+                        {a.status.replace("_", " ")}
+                      </span>
+                    </td>
                     <td className="px-6 py-4 text-xs">{a.version}</td>
                     <td className="px-6 py-4 text-xs">
                       {a.clinicallyValidated ? "Validated" : "No"}
@@ -167,7 +241,7 @@ export default function AssessmentsAdminPage() {
         </div>
 
         {pagination.totalPages > 1 && (
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-3 border-t border-white/[0.06]">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-3 border-t border-border">
             <span className="text-xs text-on-surface-variant/70">
               Page {pagination.page} of {pagination.totalPages}
             </span>
@@ -176,7 +250,7 @@ export default function AssessmentsAdminPage() {
                 type="button"
                 disabled={page <= 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="text-xs px-3 py-1.5 rounded border border-white/10 disabled:opacity-40"
+                className="text-xs px-3 py-1.5 rounded-full border border-border disabled:opacity-40"
               >
                 Previous
               </button>
@@ -184,7 +258,7 @@ export default function AssessmentsAdminPage() {
                 type="button"
                 disabled={page >= pagination.totalPages}
                 onClick={() => setPage((p) => p + 1)}
-                className="text-xs px-3 py-1.5 rounded border border-white/10 disabled:opacity-40"
+                className="text-xs px-3 py-1.5 rounded-full border border-border disabled:opacity-40"
               >
                 Next
               </button>
@@ -192,6 +266,105 @@ export default function AssessmentsAdminPage() {
           </div>
         )}
       </div>
+      </>
+      )}
+
+      {tab === "completions" && (
+        <div className="card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[900px] text-left">
+              <thead className="admin-table-head">
+                <tr>
+                  <th className="table-head-cell px-6">User</th>
+                  <th className="table-head-cell px-6">Assessment</th>
+                  <th className="table-head-cell px-6">Result</th>
+                  <th className="table-head-cell px-6">Score</th>
+                  <th className="table-head-cell px-6">Completed</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {resultsLoading ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="px-6 py-8 text-center text-xs text-on-surface-variant/70"
+                    >
+                      Loading completions...
+                    </td>
+                  </tr>
+                ) : results.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="px-6 py-8 text-center text-xs text-on-surface-variant/70"
+                    >
+                      No saved completions yet.
+                    </td>
+                  </tr>
+                ) : (
+                  results.map((r) => (
+                    <tr key={r.resultId} className="hover:bg-[#FFF0F6]">
+                      <td className="px-6 py-4">
+                        <div className="text-sm font-medium">{r.user.name}</div>
+                        <div className="text-[11px] text-on-surface-variant/70">
+                          {r.user.email}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm">{r.title}</div>
+                        <div className="text-[11px] text-on-surface-variant/70">
+                          {r.assessmentSlug} · v{r.instrumentVersion}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-xs">
+                        {r.interpretationLabel || r.scoringMethod || "—"}
+                      </td>
+                      <td className="px-6 py-4 text-xs">
+                        {r.totalScore != null && r.maxScore != null
+                          ? `${r.totalScore}/${r.maxScore}`
+                          : "—"}
+                      </td>
+                      <td className="px-6 py-4 text-xs">
+                        {r.completedAt
+                          ? new Date(r.completedAt).toLocaleString()
+                          : "—"}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          {resultsTotalPages > 1 && (
+            <div className="flex items-center justify-between px-6 py-3 border-t border-border">
+              <span className="text-xs text-on-surface-variant/70">
+                Page {resultsPage} of {resultsTotalPages}
+              </span>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  disabled={resultsPage <= 1}
+                  onClick={() => setResultsPage((p) => Math.max(1, p - 1))}
+                  className="text-xs px-3 py-1.5 rounded border border-white/10 disabled:opacity-40"
+                >
+                  Previous
+                </button>
+                <button
+                  type="button"
+                  disabled={resultsPage >= resultsTotalPages}
+                  onClick={() => setResultsPage((p) => p + 1)}
+                  className="text-xs px-3 py-1.5 rounded border border-white/10 disabled:opacity-40"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+          <p className="px-6 py-3 text-[11px] text-on-surface-variant/70 border-t border-border">
+            Answer content is intentionally omitted for privacy.
+          </p>
+        </div>
+      )}
 
       <Drawer
         isOpen={Boolean(selectedSlug)}
@@ -237,7 +410,7 @@ export default function AssessmentsAdminPage() {
                 </div>
                 <ul className="space-y-2 max-h-64 overflow-y-auto">
                   {detail.questions.map((q: any) => (
-                    <li key={q.id} className="rounded bg-white/[0.04] p-2 text-xs">
+                    <li key={q.id} className="rounded bg-[#FFF8FB]/80 p-2 text-xs">
                       <span className="font-medium">{q.id}</span>
                       <span className="text-on-surface-variant/70"> · {q.responseType}</span>
                       <div className="mt-1 text-on-surface-variant/90 line-clamp-2">{q.text}</div>

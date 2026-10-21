@@ -29,13 +29,13 @@ export function Button({
 
   const variants = {
     primary:
-      "bg-white text-[#1c1033] shadow-[rgba(255,255,255,0.7)_0px_1px_0px_0px_inset,rgba(179,132,201,0.35)_0px_10px_30px_0px] hover:brightness-105 hover:-translate-y-px active:translate-y-0",
+      "bg-primary text-primary-foreground shadow-primary hover:bg-primary-hover hover:-translate-y-px active:translate-y-0",
     secondary:
-      "bg-[rgba(255,255,255,0.05)] text-[#f3eefa] border border-[rgba(216,191,227,0.22)] hover:bg-[rgba(255,255,255,0.08)]",
+      "bg-secondary text-secondary-foreground border border-border hover:bg-secondary-hover",
     outline:
-      "bg-white/[0.04] text-on-surface border border-[rgba(216,191,227,0.22)] backdrop-blur-md hover:border-[rgba(216,191,227,0.35)] hover:bg-white/[0.07]",
+      "bg-white/70 text-on-surface border border-border backdrop-blur-md hover:border-border-strong hover:bg-[#fff0f6]",
     ghost:
-      "bg-transparent text-on-surface-variant hover:bg-white/[0.06] hover:text-on-surface",
+      "bg-transparent text-on-surface-variant hover:bg-[#fff0f6] hover:text-on-surface",
     danger:
       "bg-error text-error-foreground hover:brightness-110 shadow-sm hover:-translate-y-px active:translate-y-0",
   };

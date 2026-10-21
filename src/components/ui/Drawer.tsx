@@ -25,8 +25,8 @@ export function Drawer({
       />
 
       <div className="absolute inset-y-0 right-0 max-w-full flex sm:pl-10">
-        <div className="w-screen max-w-xl glass-panel-strong border-l border-white/[0.08] flex flex-col animate-slide-left">
-          <div className="px-6 py-5 border-b border-white/[0.08] bg-white/[0.03] flex items-start justify-between gap-4 flex-shrink-0">
+        <div className="w-screen max-w-xl glass-panel-strong border-l border-border flex flex-col animate-slide-left">
+          <div className="px-6 py-5 border-b border-border bg-[#FFF8FB] flex items-start justify-between gap-4 flex-shrink-0">
             <div className="min-w-0">
               <h3 className="text-base font-semibold text-on-surface font-display tracking-tight truncate">
                 {title}
@@ -38,8 +38,8 @@ export function Drawer({
             <button
               onClick={onClose}
               aria-label="Close panel"
-              className="flex-shrink-0 w-9 h-9 rounded-lg border border-white/[0.08] bg-white/[0.04] text-on-surface-variant
-                         hover:bg-white/[0.08] hover:text-on-surface transition-colors
+              className="flex-shrink-0 w-9 h-9 rounded-lg border border-border bg-[#FFF8FB]/80 text-on-surface-variant
+                         hover:bg-[#FFF0F6] hover:text-on-surface transition-colors
                          flex items-center justify-center"
             >
               <span className="material-symbols-outlined text-[18px]">close</span>

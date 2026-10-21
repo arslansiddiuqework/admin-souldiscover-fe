@@ -8,7 +8,7 @@
 
 import axios from "axios";
 
-const BACKEND_URL_RAW = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+const BACKEND_URL_RAW = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4001";
 const BACKEND_URL = BACKEND_URL_RAW.endsWith('/') ? BACKEND_URL_RAW.slice(0, -1) : BACKEND_URL_RAW;
 
 export const apiClient = axios.create({

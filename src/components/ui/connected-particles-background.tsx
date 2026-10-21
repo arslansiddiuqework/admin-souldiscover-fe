@@ -19,10 +19,11 @@ type Palette = {
   line: string;
 };
 
+/* Blush orchid particle tints — match user web */
 const PALETTES: Palette[] = [
-  { fill: "255,255,255", line: "200,190,230" },
-  { fill: "145,125,255", line: "145,125,255" },
-  { fill: "100,130,255", line: "110,140,255" },
+  { fill: "155,55,110", line: "183,71,131" },
+  { fill: "120,45,90", line: "159,55,111" },
+  { fill: "130,70,155", line: "150,88,183" },
 ];
 
 function prefersReducedMotion(): boolean {
@@ -63,7 +64,7 @@ function createParticles(width: number, height: number, count: number): Particle
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
       r: width < 640 ? 0.8 + Math.random() * 0.6 : 1 + Math.random() * 1.1,
-      baseAlpha: 0.14 + Math.random() * 0.14,
+      baseAlpha: 0.08 + Math.random() * 0.1,
       tint: (Math.random() < 0.55 ? 0 : Math.random() < 0.65 ? 1 : 2) as 0 | 1 | 2,
       glow: Math.random() < 0.12,
       phase: Math.random() * Math.PI * 2,
@@ -298,7 +299,7 @@ export function ConnectedParticlesBackground() {
     <canvas
       ref={canvasRef}
       aria-hidden
-      className="pointer-events-none absolute inset-0 z-[1] h-full w-full"
+      className="pointer-events-none absolute inset-0 z-[1] h-full w-full opacity-70"
     />
   );
 }
