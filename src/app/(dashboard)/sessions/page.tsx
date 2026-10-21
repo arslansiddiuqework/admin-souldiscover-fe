@@ -5,7 +5,6 @@ import { useUsers } from "@/hooks/useUsers";
 import { sessionService } from "@/services/sessionService";
 import { useAuth } from "@/hooks/useAuth";
 import { Drawer } from "@/components/ui/Drawer";
-import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/providers";
 import { useSearchParams } from "next/navigation";
 import { AvatarImage } from "@/components/ui/avatar-image";
@@ -95,14 +94,17 @@ export default function SessionsPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col gap-4 w-full font-sans text-on-surface">
+    <div className="page-shell">
       <PageHeader
+        eyebrow="Clinical"
         title="Sessions Directory"
-        description="Browse therapy sessions grouped by user profiles."
+        description="Browse therapy sessions grouped by member profiles — open a card to review history, risk flags, and secure transcripts."
+        meta={
+          <span className="badge badge-primary">{pagination.total} members</span>
+        }
       />
 
-      {/* Filter and Search controls */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 card p-4">
+      <div className="filter-bar">
         <div className="field-shell">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/80 text-lg">search</span>
           <input
@@ -124,43 +126,54 @@ export default function SessionsPage() {
           <option value="suspended">Suspended Users</option>
         </select>
 
-        <div className="flex items-center justify-end text-xs text-on-surface-variant/80 font-normal px-2">
-          Total Users: {pagination.total}
+        <div className="flex items-center justify-end text-xs text-on-surface-variant/80 font-medium px-1">
+          Showing {users.length} of {pagination.total}
         </div>
       </div>
 
-      {/* Cards Grid: Users Profile Cards */}
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
           {[...Array(8)].map((_, idx) => (
-            <div key={idx} className="h-48 bg-surface border border-border rounded-xl animate-pulse"></div>
+            <div key={idx} className="h-52 rounded-[22px] border border-border bg-white/70 animate-pulse" />
           ))}
         </div>
       ) : users.length === 0 ? (
-        <div className="card py-16 text-center shadow-sm">
-          <span className="material-symbols-outlined text-[40px] text-on-surface-variant/40 mb-3">group_off</span>
-          <h3 className="text-base font-semibold text-on-surface">No Users Found</h3>
-          <p className="text-xs text-on-surface-variant/75 mt-1">Adjust search parameters or filter criteria.</p>
+        <div className="panel">
+          <div className="empty-state">
+            <div className="empty-state-icon">
+              <span className="material-symbols-outlined text-[28px]">group_off</span>
+            </div>
+            <p className="text-sm font-semibold text-on-surface">No users found</p>
+            <p className="text-xs text-on-surface-variant max-w-xs">
+              Adjust search parameters or filter criteria.
+            </p>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
           {users.map((user: any) => (
             <div
               key={user._id}
-              className="card p-5 flex flex-col justify-between shadow-sm hover:border-primary/30 transition-all group cursor-pointer"
+              className="group relative flex flex-col justify-between overflow-hidden rounded-[22px] border border-border bg-white/90 p-5 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-card-hover cursor-pointer"
               onClick={() => handleSelectUser(user)}
             >
-              <div>
-                {/* Header */}
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-surface-dim border border-outline-variant flex items-center justify-center font-bold text-lg text-primary shadow-sm overflow-hidden group-hover:border-primary/50 transition-colors flex-shrink-0">
+              <div
+                className="pointer-events-none absolute inset-0 opacity-90"
+                style={{
+                  backgroundImage:
+                    "radial-gradient(ellipse 80% 70% at 0% 0%, rgba(255,229,240,0.95), transparent 55%), radial-gradient(ellipse 60% 50% at 100% 0%, rgba(241,234,255,0.7), transparent 50%)",
+                }}
+              />
+              <div className="relative">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="h-12 w-12 rounded-full bg-primary-container ring-1 ring-border flex items-center justify-center font-bold text-lg text-primary overflow-hidden group-hover:ring-primary/40 transition-colors flex-shrink-0">
                     {user.profileImage ? (
-                      <AvatarImage src={user.profileImage} alt={user.name} width={32} height={32} className="w-full h-full object-cover" />
+                      <AvatarImage src={user.profileImage} alt={user.name} width={48} height={48} className="w-full h-full object-cover" />
                     ) : (
                       (user.name || "U").charAt(0).toUpperCase()
                     )}
                   </div>
-                  <div className="overflow-hidden">
+                  <div className="overflow-hidden min-w-0">
                     <h3 className="text-sm font-semibold text-on-surface group-hover:text-primary transition-colors line-clamp-1">
                       {user.name || "Unknown User"}
                     </h3>
@@ -168,55 +181,61 @@ export default function SessionsPage() {
                   </div>
                 </div>
 
-                {/* Stats */}
-                <div className="flex justify-between items-center bg-surface-dim p-3 rounded-lg border border-border mb-4">
+                <div className="flex justify-between items-center rounded-2xl border border-border bg-white/70 p-3.5 mb-5 backdrop-blur-sm">
                   <div className="text-center flex-1 border-r border-border">
-                    <div className="text-[10px] uppercase text-on-surface-variant/70 tracking-wider">Sessions</div>
-                    <div className="text-sm font-semibold text-on-surface mt-0.5">{user.sessionCount || 0}</div>
+                    <div className="text-[10px] uppercase text-on-surface-variant/70 tracking-wider font-semibold">Sessions</div>
+                    <div className="text-sm font-bold text-on-surface mt-1">{user.sessionCount || 0}</div>
                   </div>
                   <div className="text-center flex-1">
-                    <div className="text-[10px] uppercase text-on-surface-variant/70 tracking-wider">Status</div>
-                    <div className={`text-[10px] font-semibold mt-1 uppercase ${user.status === 'suspended' ? 'text-error' : 'text-primary'}`}>
-                      {user.status || 'Active'}
+                    <div className="text-[10px] uppercase text-on-surface-variant/70 tracking-wider font-semibold">Status</div>
+                    <div className="mt-1.5 flex justify-center">
+                      <span className={`badge text-[9px] uppercase tracking-wider ${
+                        user.status === "suspended" ? "badge-error" : "badge-success"
+                      }`}>
+                        {user.status || "Active"}
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <Button
-                variant="outline"
-                className="w-full text-[11px] font-sans flex items-center justify-center gap-1.5 group-hover:bg-primary/10 group-hover:text-primary transition-colors"
+              <button
+                type="button"
+                className="relative soft-btn w-full group-hover:border-primary/30 group-hover:bg-[#FFF0F6] group-hover:text-primary"
                 onClick={(e) => { e.stopPropagation(); handleSelectUser(user); }}
               >
                 <span className="material-symbols-outlined text-[15px]">list_alt</span>
                 View Sessions
-              </Button>
+              </button>
             </div>
           ))}
         </div>
       )}
 
-      {/* Pagination component */}
       {!isLoading && users.length > 0 && (
-        <div className="px-6 py-4 card flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between font-sans text-xs">
-          <span className="text-on-surface-variant/80">
-            Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
-          </span>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => p - 1)}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              disabled={page >= pagination.totalPages}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              Next
-            </Button>
+        <div className="panel">
+          <div className="pagination-bar text-xs !border-t-0">
+            <span className="text-on-surface-variant/80">
+              Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
+            </span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className="soft-btn"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => p - 1)}
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                className="soft-btn"
+                disabled={page >= pagination.totalPages}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -227,9 +246,9 @@ export default function SessionsPage() {
         onClose={() => setSelectedUserForSessions(null)}
         title={
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-full bg-surface-dim border border-outline-variant flex items-center justify-center font-bold text-[10px] text-primary shadow-sm overflow-hidden flex-shrink-0">
+            <div className="h-10 w-10 rounded-full bg-primary-container ring-1 ring-border flex items-center justify-center font-bold text-sm text-primary overflow-hidden flex-shrink-0">
               {selectedUserForSessions?.profileImage ? (
-                <AvatarImage src={selectedUserForSessions.profileImage} alt={selectedUserForSessions.name} width={28} height={28} className="w-full h-full object-cover" />
+                <AvatarImage src={selectedUserForSessions.profileImage} alt={selectedUserForSessions.name} width={40} height={40} className="w-full h-full object-cover" />
               ) : (
                 (selectedUserForSessions?.name || "U").charAt(0).toUpperCase()
               )}
@@ -247,9 +266,12 @@ export default function SessionsPage() {
               ))}
             </div>
           ) : userSessions.length === 0 ? (
-            <div className="text-center py-12 text-on-surface-variant/60">
-              <span className="material-symbols-outlined text-[32px] mb-2">inbox</span>
-              <p>This user has no recorded sessions.</p>
+            <div className="empty-state py-10">
+              <div className="empty-state-icon">
+                <span className="material-symbols-outlined text-[24px]">inbox</span>
+              </div>
+              <p className="text-sm font-semibold text-on-surface">No sessions yet</p>
+              <p className="text-xs text-on-surface-variant">This user has no recorded sessions.</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -305,9 +327,9 @@ export default function SessionsPage() {
             >
               <span className="material-symbols-outlined text-[16px]">arrow_back</span>
             </button>
-            <div className="w-7 h-7 rounded-full bg-surface-dim border border-outline-variant flex items-center justify-center font-bold text-[10px] text-primary shadow-sm overflow-hidden flex-shrink-0">
+            <div className="h-10 w-10 rounded-full bg-primary-container ring-1 ring-border flex items-center justify-center font-bold text-sm text-primary overflow-hidden flex-shrink-0">
               {inspectSession?.userProfileImage ? (
-                <AvatarImage src={inspectSession.userProfileImage} alt={inspectSession.userName} width={28} height={28} className="w-full h-full object-cover" />
+                <AvatarImage src={inspectSession.userProfileImage} alt={inspectSession.userName} width={40} height={40} className="w-full h-full object-cover" />
               ) : (
                 (inspectSession?.userName || "U").charAt(0).toUpperCase()
               )}
@@ -382,8 +404,8 @@ export default function SessionsPage() {
                 <div className="text-center text-on-surface-variant/50 py-8 animate-pulse text-[11px]">Loading transcript...</div>
               ) : !inspectSession?.hasRisk ? (
                 <div className="flex flex-col items-center justify-center py-12 px-4 text-center space-y-4">
-                  <div className="w-12 h-12 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center text-primary">
-                    <span className="material-symbols-outlined text-[22px] text-on-surface-variant/80">lock</span>
+                  <div className="w-12 h-12 rounded-full bg-primary-container ring-1 ring-border flex items-center justify-center text-primary">
+                    <span className="material-symbols-outlined text-[22px]">lock</span>
                   </div>
                   <div>
                     <h5 className="font-semibold text-xs text-on-surface">Transcript Privacy Enabled</h5>

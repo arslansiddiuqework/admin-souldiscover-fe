@@ -22,7 +22,7 @@ export function Modal({
   confirmText = "Confirm",
   cancelText = "Cancel",
   isConfirming = false,
-  variant = "primary"
+  variant = "primary",
 }: ModalProps) {
   if (!isOpen) return null;
 
@@ -38,24 +38,37 @@ export function Modal({
       <div
         role="dialog"
         aria-modal="true"
-        className="relative w-full max-w-[440px] glass-panel-strong rounded-2xl p-7 overflow-hidden animate-zoom-in"
+        className="relative w-full max-w-[440px] overflow-hidden rounded-[24px] border border-border bg-white/95 p-7 shadow-popover backdrop-blur-xl animate-zoom-in"
       >
         <div
-          className={`w-11 h-11 rounded-xl flex items-center justify-center mb-5 ${
-            isDanger ? "bg-error-container text-error" : "bg-primary-container text-primary"
+          className="pointer-events-none absolute inset-x-0 top-0 h-24"
+          style={{
+            backgroundImage: isDanger
+              ? "radial-gradient(ellipse 80% 100% at 50% 0%, rgba(255,240,242,0.95), transparent 70%)"
+              : "radial-gradient(ellipse 80% 100% at 50% 0%, rgba(255,229,240,0.95), transparent 70%)",
+          }}
+        />
+
+        <div
+          className={`relative mb-5 flex h-12 w-12 items-center justify-center rounded-2xl ${
+            isDanger
+              ? "bg-error-container text-error ring-1 ring-error/15"
+              : "bg-primary-container text-primary ring-1 ring-primary/15"
           }`}
         >
-          <span className="material-symbols-outlined text-[22px]">
+          <span className="material-symbols-outlined text-[24px]">
             {isDanger ? "warning" : "help"}
           </span>
         </div>
 
-        <h3 className="text-lg font-semibold text-on-surface mb-2 font-display tracking-tight">
+        <h3 className="relative mb-2 text-lg font-bold tracking-tight text-on-surface">
           {title}
         </h3>
-        <p className="text-sm text-on-surface-variant mb-7 leading-relaxed">{description}</p>
+        <p className="relative mb-7 text-sm leading-relaxed text-on-surface-variant">
+          {description}
+        </p>
 
-        <div className="flex justify-end gap-3">
+        <div className="relative flex justify-end gap-3">
           <Button variant="outline" onClick={onClose}>
             {cancelText}
           </Button>

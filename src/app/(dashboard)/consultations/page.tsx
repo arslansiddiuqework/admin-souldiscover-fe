@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { useConsultations } from "@/hooks/useConsultations";
 import { Drawer } from "@/components/ui/Drawer";
-import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/providers";
 import { PageHeader } from "@/components/layout/PageHeader";
 
@@ -38,10 +37,14 @@ export default function ConsultationsPage() {
   });
 
   return (
-    <div className="flex flex-col gap-4 w-full font-sans text-on-surface">
+    <div className="page-shell">
       <PageHeader
+        eyebrow="Clinical"
         title="Consultations"
-        description="Track psychologist booking requests and session status."
+        description="Track psychologist booking requests, session timing, and payment status across the care network."
+        meta={
+          <span className="badge badge-primary">{summary.totalBookings} bookings</span>
+        }
       />
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
@@ -52,16 +55,28 @@ export default function ConsultationsPage() {
           { label: "Completed", value: summary.completed },
           { label: "Cancelled", value: summary.cancelled },
         ].map((card) => (
-          <div key={card.label} className="card p-4">
-            <div className="text-[10px] uppercase tracking-wider text-on-surface-variant/70 font-semibold">
-              {card.label}
+          <div
+            key={card.label}
+            className="relative overflow-hidden rounded-[20px] border border-border bg-white/90 p-4 shadow-card"
+          >
+            <div
+              className="pointer-events-none absolute inset-0"
+              style={{
+                backgroundImage:
+                  "radial-gradient(ellipse 80% 80% at 0% 0%, rgba(255,229,240,0.7), transparent 60%)",
+              }}
+            />
+            <div className="relative">
+              <div className="text-[10px] uppercase tracking-wider text-on-surface-variant/70 font-semibold">
+                {card.label}
+              </div>
+              <div className="text-xl font-bold mt-1.5 text-on-surface">{card.value}</div>
             </div>
-            <div className="text-xl font-bold mt-1">{card.value}</div>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 card p-4">
+      <div className="filter-bar">
         <div className="field-shell">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/80 text-lg">
             search
@@ -88,7 +103,17 @@ export default function ConsultationsPage() {
         </select>
       </div>
 
-      <div className="card overflow-hidden">
+      <div className="panel">
+        <div className="panel-header">
+          <div>
+            <h2 className="text-sm font-semibold text-on-surface">Bookings</h2>
+            <p className="text-[11px] text-on-surface-variant/70 mt-0.5">
+              Appear when members book from Pricing or Dashboard
+            </p>
+          </div>
+          <span className="badge badge-neutral">{pagination.total} records</span>
+        </div>
+
         <div className="overflow-x-auto">
           <table className="w-full min-w-[950px] text-left">
             <thead className="admin-table-head">
@@ -110,25 +135,40 @@ export default function ConsultationsPage() {
                 </tr>
               ) : consultations.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-xs text-on-surface-variant/70">
-                    No bookings yet. They appear here when users book from Pricing / Dashboard.
+                  <td colSpan={6}>
+                    <div className="empty-state">
+                      <div className="empty-state-icon">
+                        <span className="material-symbols-outlined text-[28px]">event_busy</span>
+                      </div>
+                      <p className="text-sm font-semibold text-on-surface">No bookings yet</p>
+                      <p className="text-xs text-on-surface-variant max-w-sm">
+                        They appear here when users book from Pricing / Dashboard.
+                      </p>
+                    </div>
                   </td>
                 </tr>
               ) : (
                 consultations.map((booking) => (
                   <tr
                     key={booking._id}
-                    className="hover:bg-[#FFF0F6] cursor-pointer"
+                    className="hover:bg-[#FFF0F6]/80 cursor-pointer transition-colors"
                     onClick={() => setSelected(booking)}
                   >
                     <td className="px-6 py-4">
-                      <div className="text-xs font-semibold">{booking.clientName}</div>
-                      <div className="text-[10px] text-on-surface-variant/70">{booking.clientEmail}</div>
-                      {booking.user && (
-                        <div className="text-[10px] text-on-surface-variant/55 mt-0.5">
-                          Account: {booking.user.name}
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-primary-container ring-1 ring-border flex items-center justify-center font-semibold text-sm text-primary flex-shrink-0">
+                          {(booking.clientName || "C").charAt(0).toUpperCase()}
                         </div>
-                      )}
+                        <div>
+                          <div className="text-xs font-semibold">{booking.clientName}</div>
+                          <div className="text-[10px] text-on-surface-variant/70">{booking.clientEmail}</div>
+                          {booking.user && (
+                            <div className="text-[10px] text-on-surface-variant/55 mt-0.5">
+                              Account: {booking.user.name}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-xs">{booking.psychologistName}</td>
                     <td className="px-6 py-4 text-xs">
@@ -146,8 +186,10 @@ export default function ConsultationsPage() {
                         {booking.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-[10px] uppercase text-on-surface-variant/80">
-                      {booking.paymentStatus}
+                    <td className="px-6 py-4">
+                      <span className="badge badge-neutral text-[10px] uppercase">
+                        {booking.paymentStatus}
+                      </span>
                     </td>
                     <td className="px-6 py-4 text-xs text-on-surface-variant/80 max-w-[220px] truncate">
                       {booking.reason}
@@ -159,21 +201,27 @@ export default function ConsultationsPage() {
           </table>
         </div>
 
-        <div className="px-6 py-4 border-t border-border flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-xs">
+        <div className="pagination-bar text-xs">
           <span className="text-on-surface-variant/80">
             Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
           </span>
           <div className="flex gap-2">
-            <Button variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+            <button
+              type="button"
+              className="soft-btn"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => p - 1)}
+            >
               Previous
-            </Button>
-            <Button
-              variant="outline"
+            </button>
+            <button
+              type="button"
+              className="soft-btn"
               disabled={page >= pagination.totalPages}
               onClick={() => setPage((p) => p + 1)}
             >
               Next
-            </Button>
+            </button>
           </div>
         </div>
       </div>

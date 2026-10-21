@@ -79,6 +79,91 @@ const addMetricCard = (
   doc.text(doc.splitTextToSize(note, width - 8), x + 5, y + 20);
 };
 
+type MetricTone = "orchid" | "lavender" | "blush" | "alert";
+
+const METRIC_TONES: Record<
+  MetricTone,
+  { wash: string; iconBg: string; chip: string; value: string; glow: string }
+> = {
+  orchid: {
+    wash: "from-[#FFF0F6] via-white to-white",
+    iconBg: "bg-[#FFE5F0] text-primary",
+    chip: "bg-[#FFE5F0] text-[#9F376F]",
+    value: "text-on-surface",
+    glow: "rgba(183,71,131,0.18)",
+  },
+  lavender: {
+    wash: "from-[#F4E8FF] via-white to-white",
+    iconBg: "bg-[#F1EAFF] text-[#7A5FB8]",
+    chip: "bg-[#F1EAFF] text-[#6A4FA8]",
+    value: "text-on-surface",
+    glow: "rgba(154,120,220,0.22)",
+  },
+  blush: {
+    wash: "from-[#F7E8F3] via-white to-white",
+    iconBg: "bg-[#FFF0F6] text-primary",
+    chip: "bg-[#FFF0F6] text-primary",
+    value: "text-on-surface",
+    glow: "rgba(183,71,131,0.14)",
+  },
+  alert: {
+    wash: "from-[#FFF0F2] via-white to-white",
+    iconBg: "bg-error-container text-error",
+    chip: "bg-error-container text-error",
+    value: "text-error",
+    glow: "rgba(180,35,61,0.18)",
+  },
+};
+
+function MetricCard({
+  tone,
+  icon,
+  chip,
+  label,
+  value,
+  description,
+}: {
+  tone: MetricTone;
+  icon: string;
+  chip: string;
+  label: string;
+  value: React.ReactNode;
+  description: string;
+}) {
+  const t = METRIC_TONES[tone];
+  return (
+    <div
+      className={`group relative overflow-hidden rounded-[22px] border border-border bg-gradient-to-br ${t.wash} p-5 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-border-strong hover:shadow-card-hover`}
+    >
+      <div
+        className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full opacity-40 blur-2xl"
+        style={{ background: t.glow }}
+      />
+      <div className="relative flex items-start justify-between gap-3">
+        <div
+          className={`flex h-11 w-11 items-center justify-center rounded-2xl ${t.iconBg} transition-transform duration-300 group-hover:scale-105`}
+        >
+          <span className="material-symbols-outlined text-[22px]">{icon}</span>
+        </div>
+        <span
+          className={`rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.04em] ${t.chip}`}
+        >
+          {chip}
+        </span>
+      </div>
+      <p className="relative mt-5 text-[10px] font-semibold uppercase tracking-[0.14em] text-on-surface-muted">
+        {label}
+      </p>
+      <p className={`relative mt-1.5 text-[1.75rem] font-bold leading-none tracking-tight ${t.value}`}>
+        {value}
+      </p>
+      <p className="relative mt-2 text-[11px] leading-snug text-on-surface-variant">
+        {description}
+      </p>
+    </div>
+  );
+}
+
 export default function AnalyticsPage() {
   const { metrics, trends, isLoading } = useAnalytics();
 
@@ -261,210 +346,271 @@ export default function AnalyticsPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 animate-pulse font-sans text-on-surface">
-        <div className="h-10 w-64 bg-surface rounded-lg" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="page-shell animate-pulse">
+        <div className="h-36 rounded-[28px] border border-border bg-white/70" />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-28 bg-surface border border-border rounded-xl" />
+            <div key={i} className="h-36 rounded-[22px] border border-border bg-white/70" />
           ))}
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2 h-64 bg-surface border border-border rounded-xl" />
-          <div className="h-64 bg-surface border border-border rounded-xl" />
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <div className="h-64 rounded-[22px] border border-border bg-white/70 lg:col-span-2" />
+          <div className="h-64 rounded-[22px] border border-border bg-white/70" />
         </div>
       </div>
     );
   }
 
-  const stats = [
+  const screenMoodCoverage = metrics.totalUsers > 0
+    ? Math.round((metrics.outcomeTrackedUsers / metrics.totalUsers) * 100)
+    : 0;
+
+  const coreStats: Array<{
+    label: string;
+    value: number;
+    description: string;
+    icon: string;
+    chip: string;
+    tone: MetricTone;
+  }> = [
     {
       label: "Total Users",
       value: metrics.totalUsers,
       description: "Registered Soul Discovery users",
+      icon: "group",
+      chip: "All time",
+      tone: "orchid",
     },
     {
       label: "Active Sessions",
       value: metrics.activeSessions,
       description: "Open therapy sessions with messages",
+      icon: "forum",
+      chip: "Live",
+      tone: "lavender",
     },
     {
       label: "Therapy Sessions",
       value: metrics.totalSessions,
       description: "Total AI therapy conversations",
+      icon: "psychology",
+      chip: "All time",
+      tone: "blush",
     },
     {
       label: "Emergency Events",
       value: metrics.totalEscalations,
       description: "Triggered emergency alerts",
+      icon: "emergency",
+      chip: "Safety",
+      tone: metrics.totalEscalations > 0 ? "alert" : "orchid",
     },
   ];
 
-  const productStats = [
+  const productStats: Array<{
+    label: string;
+    value: number;
+    description: string;
+    icon: string;
+    chip: string;
+    tone: MetricTone;
+  }> = [
     {
       label: "Wellness Enrollments",
       value: metrics.totalWellnessEnrollments || 0,
       description: `${metrics.activeWellnessPlans || 0} active · ${metrics.avgWellnessCompletionRate || 0}% avg completion`,
+      icon: "spa",
+      chip: "Wellness",
+      tone: "lavender",
     },
     {
       label: "Consultations",
       value: metrics.totalConsultations || 0,
       description: `${metrics.upcomingConsultations || 0} upcoming · ${metrics.completedConsultations || 0} completed`,
+      icon: "event_available",
+      chip: "Bookings",
+      tone: "orchid",
     },
     {
       label: "Mood Check-ins",
       value: metrics.totalMoodEntries,
       description: `Weekly avg ${metrics.avgMoodScore}/100`,
+      icon: "mood",
+      chip: "Mood",
+      tone: "blush",
     },
     {
       label: "Activities Logged",
       value: metrics.totalActivities,
       description: `${metrics.weeklyActivityCompletionRate}% weekly completion`,
+      icon: "self_improvement",
+      chip: "Activities",
+      tone: "lavender",
     },
     {
       label: "Assessment Completions",
       value: metrics.totalAssessmentCompletions || 0,
       description: `${metrics.assessmentCompletionsThisWeek || 0} this week · ${metrics.assessmentInProgressSessions || 0} in progress`,
+      icon: "assignment_turned_in",
+      chip: "Assessments",
+      tone: "orchid",
     },
   ];
 
-  const screenMoodCoverage = metrics.totalUsers > 0
-    ? Math.round((metrics.outcomeTrackedUsers / metrics.totalUsers) * 100)
-    : 0;
-
-  const impactStats = [
+  const impactStats: Array<{
+    label: string;
+    value: number | string;
+    description: string;
+    icon: string;
+    chip: string;
+    tone: MetricTone;
+  }> = [
     {
       label: "Benefited This Week",
       value: metrics.benefitedUsersThisWeek,
       description: "Mood improved by 5+ points",
+      icon: "trending_up",
+      chip: "Impact",
+      tone: "orchid",
     },
     {
       label: "Not Recovered",
       value: metrics.notRecoveredUsersThisWeek,
       description: "Low mood with no clear improvement",
+      icon: "trending_down",
+      chip: "Follow-up",
+      tone: metrics.notRecoveredUsersThisWeek > 0 ? "alert" : "blush",
     },
     {
       label: "Needs Follow-up",
       value: metrics.needsFollowUpUsers,
       description: "Latest mood is still below 50",
+      icon: "priority_high",
+      chip: "Priority",
+      tone: metrics.needsFollowUpUsers > 0 ? "alert" : "lavender",
     },
     {
       label: "Mood Coverage",
       value: `${screenMoodCoverage}%`,
       description: "Total users with comparable mood data",
+      icon: "donut_large",
+      chip: "Coverage",
+      tone: "blush",
     },
   ];
 
   return (
-    <div className="flex-1 flex flex-col gap-4 w-full font-sans text-on-surface">
-
+    <div className="page-shell">
       <PageHeader
+        eyebrow="Insights"
         title="Operational Analytics"
         description="System usage, therapy activity, and emergency overview."
-        actions={
-          <button
-            onClick={exportToPDF}
-            className="flex items-center gap-2 px-4 py-2 border border-border rounded-full text-xs font-semibold text-on-surface hover:bg-surface-variant transition-colors"
-          >
-            <span className="material-symbols-outlined text-[16px]">
-              picture_as_pdf
+        meta={
+          <>
+            <span className="badge badge-primary">Weekly impact</span>
+            <span className="badge badge-neutral">
+              {formatNumber(metrics.weeklyActiveUsers)} active this week
             </span>
+          </>
+        }
+        actions={
+          <button type="button" onClick={exportToPDF} className="soft-btn-primary">
+            <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
             Download PDF Report
           </button>
         }
       />
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((item) => (
-          <div
+      {/* Core stats */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {coreStats.map((item) => (
+          <MetricCard
             key={item.label}
-            className="card p-5"
-          >
-            <div className="text-[10px] uppercase tracking-wider text-on-surface-variant/70 font-semibold">
-              {item.label}
-            </div>
-
-            <div className="text-2xl font-bold text-on-surface mt-2">
-              {item.value.toLocaleString()}
-            </div>
-
-            <div className="text-[11px] text-on-surface-variant/70 mt-1">
-              {item.description}
-            </div>
-          </div>
+            tone={item.tone}
+            icon={item.icon}
+            chip={item.chip}
+            label={item.label}
+            value={item.value.toLocaleString()}
+            description={item.description}
+          />
         ))}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Product stats */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {productStats.map((item) => (
-          <div key={item.label} className="card p-5">
-            <div className="text-[10px] uppercase tracking-wider text-on-surface-variant/70 font-semibold">
-              {item.label}
-            </div>
-            <div className="text-2xl font-bold text-on-surface mt-2">
-              {item.value.toLocaleString()}
-            </div>
-            <div className="text-[11px] text-on-surface-variant/70 mt-1">
-              {item.description}
-            </div>
-          </div>
+          <MetricCard
+            key={item.label}
+            tone={item.tone}
+            icon={item.icon}
+            chip={item.chip}
+            label={item.label}
+            value={item.value.toLocaleString()}
+            description={item.description}
+          />
         ))}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Impact stats */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {impactStats.map((item) => (
-          <div
+          <MetricCard
             key={item.label}
-            className="card p-5"
-          >
-            <div className="text-[10px] uppercase tracking-wider text-on-surface-variant/70 font-semibold">
-              {item.label}
-            </div>
-
-            <div className="text-2xl font-bold text-on-surface mt-2">
-              {typeof item.value === "number" ? item.value.toLocaleString() : item.value}
-            </div>
-
-            <div className="text-[11px] text-on-surface-variant/70 mt-1">
-              {item.description}
-            </div>
-          </div>
+            tone={item.tone}
+            icon={item.icon}
+            chip={item.chip}
+            label={item.label}
+            value={typeof item.value === "number" ? item.value.toLocaleString() : item.value}
+            description={item.description}
+          />
         ))}
       </div>
 
       {/* Main Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="panel lg:col-span-2">
+          <div className="panel-header">
+            <div className="flex items-center gap-2.5">
+              <div className="stat-icon !h-9 !w-9 !rounded-xl">
+                <span className="material-symbols-outlined text-[18px]">self_improvement</span>
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-on-surface">
+                  Therapeutic Activity Breakdown
+                </h3>
+                <p className="text-[11px] text-on-surface-muted">Started vs completed by type</p>
+              </div>
+            </div>
+          </div>
 
-        {/* Activity Breakdown */}
-        <div className="lg:col-span-2 card p-6">
-          <h3 className="text-lg font-semibold text-on-surface mb-4">
-            Therapeutic Activity Breakdown
-          </h3>
-
-          <div className="space-y-4">
+          <div className="space-y-0 divide-y divide-border px-5 py-1">
             {trends.activityBreakdown.length === 0 ? (
-              <p className="text-xs text-on-surface-variant/65">No activity data available.</p>
+              <div className="empty-state py-10">
+                <div className="empty-state-icon">
+                  <span className="material-symbols-outlined text-[28px]">self_improvement</span>
+                </div>
+                <p className="text-sm font-semibold text-on-surface">No activity data</p>
+                <p className="text-xs text-on-surface-muted">Logged activities will appear here.</p>
+              </div>
             ) : (
               trends.activityBreakdown.map((item: any, index: number) => (
-                <div
-                  key={index}
-                  className="flex justify-between items-center border-b border-border pb-3 last:border-0"
-                >
+                <div key={index} className="flex items-center justify-between py-3.5">
                   <div>
-                    <div className="text-sm font-medium text-on-surface capitalize">
-                      {item._id}
-                    </div>
-                    <div className="text-xs text-on-surface-variant/70 mt-0.5">
+                    <div className="text-sm font-medium capitalize text-on-surface">{item._id}</div>
+                    <div className="mt-0.5 text-xs text-on-surface-muted">
                       {formatNumber(item.totalMinutes || 0)} minutes spent
                     </div>
                   </div>
-
                   <div className="flex gap-4 text-xs">
-                    <div className="text-on-surface-variant/80">
-                      <span className="font-semibold text-on-surface">{formatNumber(item.count)}</span> Started
+                    <div className="text-on-surface-variant">
+                      <span className="font-semibold text-on-surface">{formatNumber(item.count)}</span>{" "}
+                      Started
                     </div>
-                    <div className="text-on-surface-variant/80">
-                      <span className="font-semibold text-primary">{formatNumber(item.completedCount)}</span> Completed
+                    <div className="text-on-surface-variant">
+                      <span className="font-semibold text-primary">
+                        {formatNumber(item.completedCount)}
+                      </span>{" "}
+                      Completed
                     </div>
                   </div>
                 </div>
@@ -473,21 +619,34 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        {/* Wellness goals */}
-        <div className="card p-6">
-          <h3 className="text-lg font-semibold text-on-surface mb-4">
-            Wellness Goals
-          </h3>
-          <div className="space-y-3">
+        <div className="panel">
+          <div className="panel-header">
+            <div className="flex items-center gap-2.5">
+              <div className="stat-icon !h-9 !w-9 !rounded-xl">
+                <span className="material-symbols-outlined text-[18px]">spa</span>
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-on-surface">Wellness Goals</h3>
+                <p className="text-[11px] text-on-surface-muted">Enrollments by goal</p>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-0 divide-y divide-border px-5 py-1">
             {(trends.wellnessByGoal || []).length === 0 ? (
-              <p className="text-xs text-on-surface-variant/65">No wellness enrollments synced yet.</p>
+              <div className="empty-state py-10">
+                <div className="empty-state-icon">
+                  <span className="material-symbols-outlined text-[28px]">spa</span>
+                </div>
+                <p className="text-sm font-semibold text-on-surface">No wellness data</p>
+                <p className="text-xs text-on-surface-muted">Enrollments will sync here.</p>
+              </div>
             ) : (
               (trends.wellnessByGoal || []).map((item: any, index: number) => (
-                <div key={index} className="flex justify-between items-center border-b border-border pb-2 last:border-0">
-                  <div className="text-sm font-medium capitalize">
+                <div key={index} className="flex items-center justify-between py-3">
+                  <div className="text-sm font-medium capitalize text-on-surface">
                     {(item._id || "custom").replace(/_/g, " ")}
                   </div>
-                  <div className="text-xs text-on-surface-variant/80">
+                  <div className="text-xs text-on-surface-variant">
                     <span className="font-semibold text-on-surface">{formatNumber(item.count)}</span>
                     {" · "}
                     {Math.round(item.avgCompletion || 0)}% avg
@@ -499,26 +658,42 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      <div className="card p-6">
-        <h3 className="text-lg font-semibold text-on-surface mb-4">
-          Assessment Completions (30 days)
-        </h3>
-        <div className="space-y-3">
+      <div className="panel">
+        <div className="panel-header">
+          <div className="flex items-center gap-2.5">
+            <div className="stat-icon !h-9 !w-9 !rounded-xl">
+              <span className="material-symbols-outlined text-[18px]">assignment_turned_in</span>
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-on-surface">
+                Assessment Completions (30 days)
+              </h3>
+              <p className="text-[11px] text-on-surface-muted">By assessment slug</p>
+            </div>
+          </div>
+        </div>
+        <div className="space-y-0 divide-y divide-border px-5 py-1">
           {(trends.assessmentsBySlug || []).length === 0 ? (
-            <p className="text-xs text-on-surface-variant/65">
-              No assessment completions in the last 30 days.
-            </p>
+            <div className="empty-state py-10">
+              <div className="empty-state-icon">
+                <span className="material-symbols-outlined text-[28px]">assignment</span>
+              </div>
+              <p className="text-sm font-semibold text-on-surface">No completions</p>
+              <p className="text-xs text-on-surface-muted">
+                No assessment completions in the last 30 days.
+              </p>
+            </div>
           ) : (
             (trends.assessmentsBySlug || []).map((item: any, index: number) => (
               <div
                 key={item.slug || index}
-                className="flex justify-between items-center border-b border-border pb-2 last:border-0"
+                className="flex items-center justify-between py-3"
               >
                 <div>
                   <div className="text-sm font-medium text-on-surface">
                     {item.title || item.slug}
                   </div>
-                  <div className="text-[11px] text-on-surface-variant/70">{item.slug}</div>
+                  <div className="text-[11px] text-on-surface-muted">{item.slug}</div>
                 </div>
                 <div className="text-xs font-semibold text-on-surface">
                   {formatNumber(item.count)}
@@ -529,39 +704,40 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
-        {/* System Overview */}
-        <div className="card p-6 flex flex-col justify-between">
-          <div>
-            <h3 className="text-lg font-semibold text-on-surface">
-              System Overview
-            </h3>
-            <p className="text-xs text-on-surface-variant/70 mt-1">
-              High-level operational health of Soul Discovery system.
-            </p>
-          </div>
-
-          <div className="mt-6 space-y-3">
-            <div className="flex justify-between text-xs">
-              <span className="text-on-surface-variant/70">System Status</span>
-              <span className="text-primary font-semibold">Operational</span>
+      <div className="panel">
+        <div className="panel-header">
+          <div className="flex items-center gap-2.5">
+            <div className="stat-icon !h-9 !w-9 !rounded-xl">
+              <span className="material-symbols-outlined text-[18px]">monitor_heart</span>
             </div>
-
-            <div className="flex justify-between text-xs">
-              <span className="text-on-surface-variant/70">API Health</span>
-              <span className="text-primary font-semibold">Stable</span>
-            </div>
-
-            <div className="flex justify-between text-xs">
-              <span className="text-on-surface-variant/70">Emergency System</span>
-              <span className="text-primary font-semibold">Active</span>
+            <div>
+              <h3 className="text-sm font-semibold text-on-surface">System Overview</h3>
+              <p className="text-[11px] text-on-surface-muted">
+                High-level operational health of Soul Discovery
+              </p>
             </div>
           </div>
+        </div>
 
-          <Link href="/logs">
-            <button className="w-full mt-6 py-2 bg-primary/10 text-primary hover:bg-primary/20 transition-colors rounded-lg text-xs font-semibold">
-              View Detailed Logs
-            </button>
+        <div className="space-y-0 divide-y divide-border px-5 py-1">
+          <div className="flex justify-between py-3.5 text-xs">
+            <span className="text-on-surface-variant">System Status</span>
+            <span className="badge badge-success text-[10px]">Operational</span>
+          </div>
+          <div className="flex justify-between py-3.5 text-xs">
+            <span className="text-on-surface-variant">API Health</span>
+            <span className="badge badge-success text-[10px]">Stable</span>
+          </div>
+          <div className="flex justify-between py-3.5 text-xs">
+            <span className="text-on-surface-variant">Emergency System</span>
+            <span className="badge badge-primary text-[10px]">Active</span>
+          </div>
+        </div>
+
+        <div className="border-t border-border bg-[#FFF8FB]/60 px-5 py-4">
+          <Link href="/logs" className="soft-btn-primary w-full sm:w-auto">
+            <span className="material-symbols-outlined text-[16px]">description</span>
+            View Detailed Logs
           </Link>
         </div>
       </div>

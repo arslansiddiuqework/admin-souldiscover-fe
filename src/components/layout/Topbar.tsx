@@ -199,11 +199,11 @@ export default function Topbar() {
   };
 
   return (
-    <header className="fixed left-0 right-0 top-0 z-40 flex h-16 items-center justify-between gap-3 px-4 glass-nav md:left-[260px] md:px-6">
+    <header className="fixed left-0 right-0 top-0 z-40 flex h-[68px] items-center justify-between gap-3 border-b border-border/80 bg-white/75 px-4 backdrop-blur-xl md:left-[260px] md:px-6">
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <button
           onClick={toggleSidebar}
-          className="flex h-9 w-9 flex-shrink-0 cursor-pointer items-center justify-center rounded-xl text-on-surface-variant transition-colors hover:bg-[#FFF0F6] hover:text-on-surface active:scale-95 md:hidden"
+          className="flex h-10 w-10 flex-shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-white text-on-surface-variant shadow-xs transition-colors hover:bg-[#FFF0F6] hover:text-on-surface active:scale-95 md:hidden"
           title="Toggle Menu"
           aria-label="Toggle menu"
         >
@@ -211,21 +211,21 @@ export default function Topbar() {
         </button>
 
         <div className="hidden min-w-0 sm:block">
-          <p className="truncate text-sm font-semibold tracking-tight text-on-surface">
+          <p className="truncate text-[15px] font-bold tracking-tight text-on-surface">
             {pageTitle}
           </p>
-          <p className="truncate text-[10px] font-medium text-on-surface-muted">
+          <p className="truncate text-[10px] font-medium uppercase tracking-[0.08em] text-on-surface-muted">
             Soul Discovery Admin
           </p>
         </div>
 
         <form
           onSubmit={handleSearchSubmit}
-          className="relative w-full max-w-sm sm:ml-2"
+          className="relative w-full max-w-md sm:ml-3"
           ref={dropdownRef}
         >
-          <div className="flex w-full items-center rounded-full border border-border bg-white/80 px-3.5 py-1.5 shadow-xs transition-all focus-within:border-primary focus-within:ring-4 focus-within:ring-ring">
-            <Search className="mr-2 h-4 w-4 text-on-surface-muted" />
+          <div className="flex w-full items-center rounded-full border border-border bg-[#FFF8FB]/90 px-4 py-2 shadow-xs transition-all focus-within:border-primary focus-within:bg-white focus-within:ring-4 focus-within:ring-ring">
+            <Search className="mr-2.5 h-4 w-4 text-primary/70" />
             <input
               className="w-full border-none bg-transparent text-sm text-on-surface outline-none placeholder:text-on-surface-muted focus:ring-0"
               placeholder="Search patients or sessions..."
@@ -349,7 +349,7 @@ export default function Topbar() {
             onClick={() => {
               setShowNotifDropdown(!showNotifDropdown);
             }}
-            className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-border bg-white/70 text-on-surface-variant transition-colors hover:bg-[#FFF0F6] hover:text-on-surface active:scale-95"
+            className="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-border bg-white text-on-surface-variant shadow-xs transition-all hover:bg-[#FFF0F6] hover:text-on-surface active:scale-95"
             title="Notifications"
             aria-label="Notifications"
             aria-expanded={showNotifDropdown}

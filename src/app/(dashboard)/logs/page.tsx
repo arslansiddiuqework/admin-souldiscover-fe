@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { useLogs } from "@/hooks/useLogs";
-import { Button } from "@/components/ui/Button";
 import { AvatarImage } from "@/components/ui/avatar-image";
 import { PageHeader } from "@/components/layout/PageHeader";
 
@@ -34,17 +33,26 @@ export default function LogsPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col gap-4 w-full font-sans text-on-surface">
+    <div className="page-shell">
       <PageHeader
+        eyebrow="Audit Trail"
         title="Activity Logs"
         description="History of system activity and emergency alerts."
+        meta={
+          <>
+            <span className="badge badge-neutral">
+              {pagination?.total ?? 0} total entries
+            </span>
+            <span className="badge badge-primary">Signed & encrypted</span>
+          </>
+        }
       />
 
-      {/* Filters HUD */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 card p-4">
-        <div className="space-y-1">
+      {/* Filters */}
+      <div className="filter-bar !grid-cols-1 sm:!grid-cols-2">
+        <div className="space-y-1.5">
           <label className="label-eyebrow">Category</label>
-          <select 
+          <select
             value={category}
             onChange={(e) => { setCategory(e.target.value); setPage(1); }}
             className="field-select text-xs"
@@ -57,9 +65,9 @@ export default function LogsPage() {
           </select>
         </div>
 
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           <label className="label-eyebrow">Severity</label>
-          <select 
+          <select
             value={severity}
             onChange={(e) => { setSeverity(e.target.value); setPage(1); }}
             className="field-select text-xs"
@@ -73,110 +81,162 @@ export default function LogsPage() {
       </div>
 
       {/* Logs Table */}
-      <div className="card overflow-hidden">
+      <div className="panel">
+        <div className="panel-header">
+          <div className="flex items-center gap-2.5">
+            <div className="stat-icon !h-9 !w-9 !rounded-xl">
+              <span className="material-symbols-outlined text-[18px]">terminal</span>
+            </div>
+            <div>
+              <h2 className="text-sm font-semibold text-on-surface">Event Stream</h2>
+              <p className="text-[11px] text-on-surface-muted">
+                Filtered activity with severity markers
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="w-full overflow-x-auto">
-          <table className="w-full min-w-[900px] text-left border-collapse">
-          <thead className="admin-table-head">
-            <tr>
-              <th className="table-head-cell px-6">Timestamp</th>
-              <th className="table-head-cell px-6">Category</th>
-              <th className="table-head-cell px-6">Description</th>
-              <th className="table-head-cell px-6 text-right">Severity</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border font-mono text-[11px] text-on-surface-variant/85">
-            {isLoading ? (
-              [...Array(5)].map((_, idx) => (
-                <tr key={idx} className="animate-pulse">
-                  <td className="px-6 py-4"><div className="h-3.5 bg-surface-dim rounded w-28"></div></td>
-                  <td className="px-6 py-4"><div className="h-3.5 bg-surface-dim rounded w-14"></div></td>
-                  <td className="px-6 py-4"><div className="h-3.5 bg-surface-dim rounded w-80"></div></td>
-                  <td className="px-6 py-4 text-right"><div className="h-3.5 bg-surface-dim rounded w-12 ml-auto"></div></td>
-                </tr>
-              ))
-            ) : logs.length === 0 ? (
+          <table className="w-full min-w-[900px] border-collapse text-left">
+            <thead className="admin-table-head">
               <tr>
-                <td colSpan={4} className="px-6 py-12 text-center text-xs text-on-surface-variant/80">
-                  <span className="material-symbols-outlined text-[36px] text-on-surface-variant/40 mb-2">description</span>
-                  <p className="font-semibold text-on-surface">No logs found</p>
-                </td>
+                <th className="table-head-cell">Timestamp</th>
+                <th className="table-head-cell">Category</th>
+                <th className="table-head-cell">Description</th>
+                <th className="table-head-cell text-right">Severity</th>
               </tr>
-            ) : (
-              logs.map((log: any) => (
-                <tr key={log.id} className="hover:bg-[#FFF0F6] transition-colors">
-                  <td className="px-6 py-3.5 whitespace-nowrap">
-                    <div className="text-on-surface-variant/90 font-mono">{log.timestamp}</div>
-                    <div className="text-[10px] text-on-surface-muted font-sans font-medium mt-0.5">{timeAgo(log.timestamp)}</div>
-                  </td>
-                  <td className="px-6 py-3.5">
-                    <span className="badge badge-neutral text-[9px] font-sans">
-                      {log.category === "AUTH" ? "Auth" : log.category === "CRISIS" ? "Crisis" : log.category}
-                    </span>
-                  </td>
-                  <td className="px-6 py-3.5 text-on-surface font-sans leading-relaxed max-w-lg truncate" title={log.description}>
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-surface-dim border border-outline-variant flex items-center justify-center font-semibold text-[9px] text-primary shadow-sm overflow-hidden flex-shrink-0">
-                        {log.userProfileImage ? (
-                          <AvatarImage src={log.userProfileImage} alt="User" width={32} height={32} className="w-full h-full object-cover" />
-                        ) : (
-                          "U"
-                        )}
+            </thead>
+            <tbody className="divide-y divide-border text-[11px] text-on-surface-variant">
+              {isLoading ? (
+                [...Array(5)].map((_, idx) => (
+                  <tr key={idx} className="animate-pulse">
+                    <td className="table-cell">
+                      <div className="skeleton h-3.5 w-28" />
+                    </td>
+                    <td className="table-cell">
+                      <div className="skeleton h-3.5 w-14" />
+                    </td>
+                    <td className="table-cell">
+                      <div className="skeleton h-3.5 w-80" />
+                    </td>
+                    <td className="table-cell text-right">
+                      <div className="skeleton ml-auto h-3.5 w-12" />
+                    </td>
+                  </tr>
+                ))
+              ) : logs.length === 0 ? (
+                <tr>
+                  <td colSpan={4}>
+                    <div className="empty-state">
+                      <div className="empty-state-icon">
+                        <span className="material-symbols-outlined text-[28px]">description</span>
                       </div>
-                      <span className="truncate">{log.description}</span>
+                      <p className="text-sm font-semibold text-on-surface">No logs found</p>
+                      <p className="text-xs text-on-surface-muted">
+                        Try adjusting category or severity filters.
+                      </p>
                     </div>
                   </td>
-                  <td className="px-6 py-3.5 text-right font-sans">
-                    <span className={`badge text-[9px] ${
-                      log.severity === "CRITICAL"
-                        ? "badge-error animate-pulse"
-                        : log.severity === "WARNING"
-                        ? "badge-warning"
-                        : "badge-info"
-                    }`}>
-                      {log.severity}
-                    </span>
-                  </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ) : (
+                logs.map((log: any) => (
+                  <tr key={log.id} className="table-row">
+                    <td className="table-cell whitespace-nowrap">
+                      <div className="font-mono text-on-surface-variant">{log.timestamp}</div>
+                      <div className="mt-0.5 font-sans text-[10px] font-medium text-on-surface-muted">
+                        {timeAgo(log.timestamp)}
+                      </div>
+                    </td>
+                    <td className="table-cell">
+                      <span className="badge badge-neutral font-sans text-[9px]">
+                        {log.category === "AUTH"
+                          ? "Auth"
+                          : log.category === "CRISIS"
+                          ? "Crisis"
+                          : log.category}
+                      </span>
+                    </td>
+                    <td
+                      className="table-cell max-w-lg truncate font-sans leading-relaxed text-on-surface"
+                      title={log.description}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-[#FFF0F6] text-[9px] font-semibold text-primary shadow-xs">
+                          {log.userProfileImage ? (
+                            <AvatarImage
+                              src={log.userProfileImage}
+                              alt="User"
+                              width={32}
+                              height={32}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            "U"
+                          )}
+                        </div>
+                        <span className="truncate">{log.description}</span>
+                      </div>
+                    </td>
+                    <td className="table-cell text-right font-sans">
+                      <span
+                        className={`badge text-[9px] ${
+                          log.severity === "CRITICAL"
+                            ? "badge-error animate-pulse"
+                            : log.severity === "WARNING"
+                            ? "badge-warning"
+                            : "badge-info"
+                        }`}
+                      >
+                        {log.severity}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
-        {/* Pagination component */}
         {!isLoading && logs.length > 0 && (
-          <div className="px-6 py-4 bg-surface-dim/50 border-t border-border flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between font-sans text-xs">
-            <span className="text-on-surface-variant/80">
+          <div className="pagination-bar font-sans text-xs">
+            <span className="text-on-surface-variant">
               Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
             </span>
             <div className="flex gap-2">
-              <Button 
-                variant="outline" 
+              <button
+                type="button"
+                className="soft-btn"
                 disabled={page <= 1}
                 onClick={() => setPage((p) => p - 1)}
               >
                 Previous
-              </Button>
-              <Button 
-                variant="outline" 
+              </button>
+              <button
+                type="button"
+                className="soft-btn"
                 disabled={page >= pagination.totalPages}
                 onClick={() => setPage((p) => p + 1)}
               >
                 Next
-              </Button>
+              </button>
             </div>
           </div>
         )}
       </div>
 
       {/* Cryptographic integrity footer */}
-      <div className="p-4 card flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between font-sans text-[11px]">
-        <div className="text-on-surface-variant/80">
-          Log Security: <span className="font-mono text-on-surface font-normal">Signed & Encrypted</span>
-        </div>
-        <div className="flex items-center gap-1.5 text-primary">
-          <span className="material-symbols-outlined text-[15px]">verified</span>
-          <span className="font-semibold uppercase tracking-wider text-[9px]">Logs Saved Securely</span>
+      <div className="panel">
+        <div className="flex flex-col gap-3 px-5 py-4 font-sans text-[11px] sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-on-surface-variant">
+            Log Security:{" "}
+            <span className="font-mono font-medium text-on-surface">Signed & Encrypted</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-primary">
+            <span className="material-symbols-outlined text-[15px]">verified</span>
+            <span className="text-[9px] font-semibold uppercase tracking-wider">
+              Logs Saved Securely
+            </span>
+          </div>
         </div>
       </div>
     </div>

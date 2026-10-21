@@ -8,8 +8,28 @@
 
 import axios from "axios";
 
-const BACKEND_URL_RAW = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4001";
-const BACKEND_URL = BACKEND_URL_RAW.endsWith('/') ? BACKEND_URL_RAW.slice(0, -1) : BACKEND_URL_RAW;
+/**
+ * Normalize backend origin.
+ * HTTPS admin pages must never call http:// APIs (browser mixed-content block).
+ * Upgrade http→https when the page is secure, or when the host is a Vercel deploy.
+ */
+function resolveBackendUrl(): string {
+  let url = (process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4001").trim();
+  if (url.endsWith("/")) url = url.slice(0, -1);
+
+  const isBrowserHttps =
+    typeof window !== "undefined" && window.location.protocol === "https:";
+  const isRemoteHttp =
+    url.startsWith("http://") && !/localhost|127\.0\.0\.1/i.test(url);
+
+  if (url.startsWith("http://") && (isBrowserHttps || isRemoteHttp)) {
+    url = `https://${url.slice("http://".length)}`;
+  }
+
+  return url;
+}
+
+const BACKEND_URL = resolveBackendUrl();
 
 export const apiClient = axios.create({
   baseURL: `${BACKEND_URL}/api/admin`,

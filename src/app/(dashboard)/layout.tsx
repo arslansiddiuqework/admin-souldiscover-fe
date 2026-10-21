@@ -49,24 +49,29 @@ export default function DashboardLayout({
       <Sidebar />
       <main className="relative z-10 flex-1 md:ml-[260px] min-w-0 flex flex-col">
         <Topbar />
-        <div className="max-w-[1440px] w-full mx-auto p-4 md:p-6 pt-20">
+        <div className="mx-auto w-full max-w-[1440px] p-4 pt-[84px] md:p-6 md:pt-[88px]">
           {isCheckingAuth ? (
-            <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3">
-              <span className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-              <span className="text-xs text-on-surface-variant">Checking authorization...</span>
+            <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3">
+              <span className="h-9 w-9 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
+              <span className="text-xs font-medium text-on-surface-variant">
+                Checking authorization...
+              </span>
             </div>
           ) : !isAllowed ? (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-              <div className="w-16 h-16 rounded-full bg-error-container border border-error/20 flex items-center justify-center mb-6 text-error">
+            <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-error/20 bg-error-container text-error shadow-card">
                 <span className="material-symbols-outlined text-[32px]">lock</span>
               </div>
-              <h1 className="text-xl font-semibold text-on-surface mb-2 font-display">Access Denied</h1>
-              <p className="text-sm text-on-surface-variant max-w-[420px] mb-8">
-                Your administrator account does not possess the required permissions to view this configuration dashboard.
+              <h1 className="mb-2 text-xl font-bold tracking-tight text-on-surface">
+                Access Denied
+              </h1>
+              <p className="mb-8 max-w-[420px] text-sm text-on-surface-variant">
+                Your administrator account does not possess the required
+                permissions to view this configuration dashboard.
               </p>
               <Link
                 href="/dashboard"
-                className="bg-primary text-primary-foreground hover:bg-primary-hover px-5 py-2.5 rounded-full text-xs font-semibold shadow-primary transition-all"
+                className="rounded-full bg-primary px-5 py-2.5 text-xs font-semibold text-primary-foreground shadow-primary transition-all hover:bg-primary-hover"
               >
                 Return to Dashboard
               </Link>

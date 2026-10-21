@@ -5,7 +5,86 @@ import Link from "next/link";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useLogs } from "@/hooks/useLogs";
 import { AvatarImage } from "@/components/ui/avatar-image";
-import { PageHeader } from "@/components/layout/PageHeader";
+
+function MiniStat({
+  label,
+  value,
+  hint,
+  icon,
+  href,
+  accent = "orchid",
+}: {
+  label: string;
+  value: React.ReactNode;
+  hint?: string;
+  icon: string;
+  href: string;
+  accent?: "orchid" | "lavender" | "alert" | "success";
+}) {
+  const accents = {
+    orchid: "from-[#FFF0F6] to-white text-primary",
+    lavender: "from-[#F4E8FF] to-white text-[#6A4FA8]",
+    alert: "from-[#FFF0F2] to-white text-error",
+    success: "from-[#EAF7EF] to-white text-success",
+  }[accent];
+
+  return (
+    <Link
+      href={href}
+      className={`group relative flex min-h-[118px] flex-col justify-between overflow-hidden rounded-[20px] border border-border bg-gradient-to-br ${accents} p-4 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-border-strong hover:shadow-card-hover`}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/80 ring-1 ring-border shadow-xs">
+          <span className="material-symbols-outlined text-[18px]">{icon}</span>
+        </span>
+        <span className="material-symbols-outlined text-[16px] text-on-surface-muted opacity-0 transition-opacity group-hover:opacity-100">
+          arrow_outward
+        </span>
+      </div>
+      <div>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-on-surface-muted">
+          {label}
+        </p>
+        <p className="mt-1 text-2xl font-bold tracking-tight text-on-surface">
+          {value}
+        </p>
+        {hint ? (
+          <p className="mt-1 text-[11px] text-on-surface-variant">{hint}</p>
+        ) : null}
+      </div>
+    </Link>
+  );
+}
+
+function ModuleLink({
+  href,
+  icon,
+  title,
+  subtitle,
+}: {
+  href: string;
+  icon: string;
+  title: string;
+  subtitle: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-center gap-3 rounded-2xl border border-border bg-white/80 p-3.5 transition-all hover:border-primary/25 hover:bg-[#FFF0F6]"
+    >
+      <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-[#FFE5F0] text-primary ring-1 ring-border">
+        <span className="material-symbols-outlined text-[20px]">{icon}</span>
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-semibold text-on-surface">{title}</p>
+        <p className="truncate text-[11px] text-on-surface-muted">{subtitle}</p>
+      </div>
+      <span className="material-symbols-outlined text-[18px] text-on-surface-muted transition-transform group-hover:translate-x-0.5 group-hover:text-primary">
+        chevron_right
+      </span>
+    </Link>
+  );
+}
 
 export default function DashboardPage() {
   const { metrics, trends, isLoading } = useAnalytics();
@@ -13,15 +92,30 @@ export default function DashboardPage() {
     category: "ALL",
     severity: "ALL",
     page: 1,
-    limit: 3
+    limit: 6,
   });
-  const [hoveredPoint, setHoveredPoint] = React.useState<any | null>(null);
+  const [hoveredDay, setHoveredDay] = React.useState<string | null>(null);
 
-  // Pad the sessions per day to guarantee exactly 7 consecutive days are shown
-  const data = React.useMemo(() => {
+  const greeting = React.useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
+  }, []);
+
+  const todayLabel = React.useMemo(
+    () =>
+      new Date().toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+      }),
+    []
+  );
+
+  const weekDays = React.useMemo(() => {
     const rawData = trends.sessionsPerDay || [];
     const map = new Map(rawData.map((d) => [d._id, d.count]));
-    
     const padded = [];
     const now = new Date();
     for (let i = 6; i >= 0; i--) {
@@ -30,374 +124,510 @@ export default function DashboardPage() {
       padded.push({
         _id: dateStr,
         count: map.get(dateStr) || 0,
+        label: d.toLocaleDateString("en-US", { weekday: "short" }),
       });
     }
     return padded;
   }, [trends.sessionsPerDay]);
 
-  const maxCount = React.useMemo(() => {
-    return data.length > 0 ? Math.max(...data.map(d => d.count), 5) : 5;
-  }, [data]);
+  const weekTotal = React.useMemo(
+    () => weekDays.reduce((sum, d) => sum + d.count, 0),
+    [weekDays]
+  );
 
-  const parsedPoints = React.useMemo(() => {
-    return data.map((item, idx) => {
-      const x = 10 + (idx / (data.length - 1 || 1)) * 80;
-      const y = 80 - (item.count / maxCount) * 60;
-      return { x, y, ...item };
-    });
-  }, [data, maxCount]);
+  const maxCount = React.useMemo(
+    () => Math.max(...weekDays.map((d) => d.count), 1),
+    [weekDays]
+  );
 
-  const pointsString = React.useMemo(() => {
-    return parsedPoints.map(p => `${p.x},${p.y}`).join(" ");
-  }, [parsedPoints]);
-
-  const areaPointsString = React.useMemo(() => {
-    return parsedPoints.length > 0
-      ? `${pointsString} ${parsedPoints[parsedPoints.length - 1].x},80 10,80`
-      : "";
-  }, [parsedPoints, pointsString]);
+  const moodDelta = metrics.avgMoodScore - metrics.previousWeekAvgMoodScore;
 
   if (isLoading) {
     return (
-      <div className="space-y-5 animate-pulse font-sans text-on-surface">
-        <div className="h-10 w-48 bg-surface border border-border rounded-lg"></div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-28 bg-surface border border-border rounded-xl"></div>
+      <div className="page-shell animate-pulse">
+        <div className="h-28 rounded-[24px] border border-border bg-white/70" />
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="h-28 rounded-[20px] border border-border bg-white/70" />
           ))}
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2 h-[350px] bg-surface border border-border rounded-xl"></div>
-          <div className="h-[350px] bg-surface border border-border rounded-xl"></div>
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+          <div className="h-[340px] rounded-[22px] border border-border bg-white/70 xl:col-span-7" />
+          <div className="h-[340px] rounded-[22px] border border-border bg-white/70 xl:col-span-5" />
         </div>
       </div>
     );
   }
 
-  // Calculate high alert banner based on emergency counts
   const showCrisisAlert = metrics.totalEscalations > 0;
 
   return (
-    <>
-      {/* Crisis Banner */}
+    <div className="page-shell !space-y-4">
       {showCrisisAlert && (
-        <div className="bg-error-container text-on-error-container border border-error/20 px-4 py-2.5 text-center text-sm flex justify-center items-center gap-2 mb-6 rounded-xl font-sans">
-          <span className="material-symbols-outlined text-[18px] text-error">warning</span>
-          <span>SYSTEM NOTICE: {metrics.totalEscalations} crisis escalation logs recorded. Monitoring systems active.</span>
+        <div className="flex items-center justify-center gap-2 rounded-2xl border border-error/20 bg-error-container px-4 py-2.5 text-center text-sm text-on-error-container">
+          <span className="material-symbols-outlined text-[18px] text-error">
+            warning
+          </span>
+          <span>
+            {metrics.totalEscalations} crisis escalation
+            {metrics.totalEscalations === 1 ? "" : "s"} on record · monitoring
+            active
+          </span>
+          <Link
+            href="/emergency"
+            className="ml-2 font-semibold text-error underline-offset-2 hover:underline"
+          >
+            Review
+          </Link>
         </div>
       )}
 
-      <PageHeader
-        title="System Overview"
-        description="Real-time status of the Soul Discovery clinical network."
-        actions={
-          <>
-            <Link href="/users">
-              <button className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-border text-on-surface font-medium hover:bg-surface-variant transition-colors text-xs font-sans">
-                <span className="material-symbols-outlined text-[16px]">group</span>
-                View Users
-              </button>
+      {/* Compact command bar */}
+      <section className="relative overflow-hidden rounded-[24px] border border-border bg-white/90 px-5 py-4 shadow-card sm:px-6">
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage:
+              "radial-gradient(ellipse 60% 120% at 0% 50%, rgba(255,229,240,0.85), transparent 55%), radial-gradient(ellipse 40% 100% at 100% 0%, rgba(241,234,255,0.7), transparent 50%)",
+          }}
+        />
+        <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary">
+              {todayLabel}
+            </p>
+            <h1 className="mt-1 text-xl font-bold tracking-tight text-on-surface sm:text-2xl">
+              {greeting} ·{" "}
+              <span className="text-gradient-brand">Clinical overview</span>
+            </h1>
+            <p className="mt-1 text-xs text-on-surface-variant sm:text-sm">
+              {metrics.weeklyActiveUsers} weekly active · {metrics.weeklySessions}{" "}
+              sessions this week · {metrics.newUsersThisWeek} new users
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/users" className="soft-btn">
+              <span className="material-symbols-outlined text-[16px]">group</span>
+              Users
             </Link>
-            <Link href="/emergency">
-              <button className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-error text-error-foreground font-medium hover:opacity-90 transition-opacity shadow-sm text-xs font-sans">
-                <span className="material-symbols-outlined text-[16px]">clinical_notes</span>
-                Review Alerts
-              </button>
+            <Link href="/emergency" className="soft-btn-primary">
+              <span className="material-symbols-outlined text-[16px]">
+                emergency
+              </span>
+              Alerts
             </Link>
-          </>
-        }
-      />
-
-      {/* KPI Bento Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5 font-sans">
-        <div className="card card-hover p-5">
-          <div className="flex justify-between items-start mb-3">
-            <div className="w-9 h-9 rounded-2xl bg-primary-container flex items-center justify-center border border-border">
-              <span className="material-symbols-outlined text-primary text-[18px]">groups</span>
-            </div>
-            <span className="text-primary/95 text-[11px] font-medium tracking-wide">Users</span>
+            <Link
+              href="/analytics"
+              className="soft-btn !border-transparent !bg-[#F1EAFF] !text-[#6A4FA8] hover:!bg-[#E9DFFF]"
+            >
+              <span className="material-symbols-outlined text-[16px]">
+                insights
+              </span>
+              Analytics
+            </Link>
           </div>
-          <h3 className="text-on-surface-variant/70 uppercase tracking-widest font-normal text-[9px] mb-1">Total Registered</h3>
-          <p className="text-2xl font-semibold text-on-surface">{metrics.totalUsers}</p>
         </div>
+      </section>
 
-        <div className="card card-hover p-5">
-          <div className="flex justify-between items-start mb-3">
-            <div className="w-9 h-9 rounded-2xl bg-primary-container flex items-center justify-center border border-border">
-              <span className="material-symbols-outlined text-primary text-[18px]">person_check</span>
-            </div>
-            <span className="text-primary/95 text-[11px] font-medium tracking-wide">Active</span>
-          </div>
-          <h3 className="text-on-surface-variant/70 uppercase tracking-widest font-normal text-[9px] mb-1">Active Sessions</h3>
-          <p className="text-2xl font-semibold text-on-surface">{metrics.activeSessions}</p>
-        </div>
+      {/* Primary + secondary KPI denser grid */}
+      <section className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-4">
+        <MiniStat
+          href="/users"
+          icon="groups"
+          label="Registered users"
+          value={metrics.totalUsers}
+          hint={`+${metrics.newUsersThisWeek} this week`}
+          accent="orchid"
+        />
+        <MiniStat
+          href="/sessions"
+          icon="forum"
+          label="Active sessions"
+          value={metrics.activeSessions}
+          hint={`${metrics.totalSessions} total lifetime`}
+          accent="lavender"
+        />
+        <MiniStat
+          href="/sessions"
+          icon="psychology"
+          label="Weekly sessions"
+          value={metrics.weeklySessions}
+          hint={`${metrics.avgSessionMinutes || 0} min avg`}
+          accent="orchid"
+        />
+        <MiniStat
+          href="/emergency"
+          icon="emergency"
+          label="Escalations / week"
+          value={metrics.escalationsThisWeek}
+          hint={`${metrics.totalEscalations} all-time`}
+          accent={metrics.escalationsThisWeek > 0 ? "alert" : "success"}
+        />
+      </section>
 
-        <div className="card card-hover p-5">
-          <div className="flex justify-between items-start mb-3">
-            <div className="w-9 h-9 rounded-2xl bg-primary-container flex items-center justify-center border border-border">
-              <span className="material-symbols-outlined text-primary text-[18px]">analytics</span>
-            </div>
-            <span className="text-primary/95 text-[11px] font-medium tracking-wide">Therapy</span>
-          </div>
-          <h3 className="text-on-surface-variant/70 uppercase tracking-widest font-normal text-[9px] mb-1">Sessions</h3>
-          <p className="text-2xl font-semibold text-on-surface">{metrics.totalSessions}</p>
-        </div>
+      <section className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+        <MiniStat
+          href="/wellness"
+          icon="spa"
+          label="Wellness plans"
+          value={metrics.activeWellnessPlans || 0}
+          hint={`${metrics.totalWellnessEnrollments || 0} enrolled`}
+          accent="lavender"
+        />
+        <MiniStat
+          href="/consultations"
+          icon="event_available"
+          label="Consultations"
+          value={metrics.upcomingConsultations || 0}
+          hint={`${metrics.totalConsultations || 0} total`}
+          accent="orchid"
+        />
+        <MiniStat
+          href="/assessments"
+          icon="quiz"
+          label="Assessments"
+          value={metrics.assessmentCompletionsThisWeek || 0}
+          hint={`${metrics.totalAssessmentCompletions || 0} completed`}
+          accent="lavender"
+        />
+        <MiniStat
+          href="/analytics"
+          icon="mood"
+          label="Avg mood"
+          value={`${metrics.avgMoodScore || 0}`}
+          hint={
+            moodDelta === 0
+              ? "vs last week · flat"
+              : `vs last week · ${moodDelta > 0 ? "+" : ""}${moodDelta}`
+          }
+          accent="success"
+        />
+        <MiniStat
+          href="/analytics"
+          icon="fitness_center"
+          label="Activities / week"
+          value={metrics.weeklyActivities || 0}
+          hint={`${metrics.weeklyActivityCompletionRate || 0}% completion`}
+          accent="orchid"
+        />
+        <MiniStat
+          href="/analytics"
+          icon="favorite"
+          label="Benefit rate"
+          value={`${Math.round(metrics.recoveryRate || 0)}%`}
+          hint={`${metrics.benefitedUsersThisWeek || 0} benefited`}
+          accent="lavender"
+        />
+      </section>
 
-        <div className="card border-error/25 p-5">
-          <div className="flex justify-between items-start mb-3">
-            <div className="w-9 h-9 rounded-2xl bg-error-container flex items-center justify-center border border-error/15">
-              <span className="material-symbols-outlined text-error text-[18px]">emergency</span>
-            </div>
-            <span className="text-error/95 text-[11px] font-medium tracking-wide">Emergency</span>
-          </div>
-          <h3 className="text-error/70 uppercase tracking-widest font-normal text-[9px] mb-1">Dispatches</h3>
-          <p className="text-2xl font-semibold text-error">{metrics.escalationsThisWeek} This Week</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 font-sans">
-        {/* Chart Section */}
-        <div className="lg:col-span-2 card p-6 flex flex-col">
-          <div className="flex justify-between items-center mb-4">
+      {/* Chart + activity + ops */}
+      <section className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+        {/* Bar chart — readable even at zero */}
+        <div className="panel flex flex-col p-5 xl:col-span-7">
+          <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h3 className="text-base font-semibold text-on-surface">Weekly Usage Trends</h3>
-              <p className="text-xs text-on-surface-variant/80 mt-1">Number of active therapy sessions per day this week.</p>
+              <h2 className="text-base font-bold tracking-tight text-on-surface">
+                Session volume
+              </h2>
+              <p className="mt-0.5 text-xs text-on-surface-muted">
+                Therapy sessions started per day · last 7 days
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="rounded-xl border border-border bg-[#FFF8FB] px-3 py-1.5 text-right">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-on-surface-muted">
+                  Week total
+                </p>
+                <p className="text-lg font-bold leading-none text-primary">
+                  {weekTotal}
+                </p>
+              </div>
+              <div className="rounded-xl border border-border bg-white px-3 py-1.5 text-right">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-on-surface-muted">
+                  Messages
+                </p>
+                <p className="text-lg font-bold leading-none text-on-surface">
+                  {metrics.weeklyMessageCount || 0}
+                </p>
+              </div>
             </div>
           </div>
-          
-          {/* Dynamic SVG Plotting */}
-          <div className="flex-1 w-full min-h-[220px] relative mt-4 border-l border-b border-border flex items-end justify-between px-4 pb-2">
-            {/* Grid background lines */}
-            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none p-4 pb-6">
-              <div className="w-full border-t border-border/30 h-0"></div>
-              <div className="w-full border-t border-border/30 h-0"></div>
-              <div className="w-full border-t border-border/30 h-0"></div>
-              <div className="w-full border-t border-border/30 h-0"></div>
-            </div>
 
-            {data.length > 0 ? (
-              <div className="absolute inset-0 p-4 pb-6">
-                <svg className="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 100">
-                  <defs>
-                    <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.25" />
-                      <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.0" />
-                    </linearGradient>
-                  </defs>
-                  
-                  {/* Filled Area */}
-                  {areaPointsString && (
-                    <polygon
-                      points={areaPointsString}
-                      fill="url(#chartGradient)"
+          <div className="relative flex h-[220px] items-end gap-2 sm:gap-3">
+            {weekDays.map((day) => {
+              const pct = Math.max((day.count / maxCount) * 100, day.count === 0 ? 6 : 12);
+              const active = hoveredDay === day._id;
+              return (
+                <div
+                  key={day._id}
+                  className="flex h-full flex-1 flex-col items-center justify-end gap-2"
+                  onMouseEnter={() => setHoveredDay(day._id)}
+                  onMouseLeave={() => setHoveredDay(null)}
+                >
+                  <div className="relative flex w-full flex-1 items-end justify-center">
+                    {active && (
+                      <div className="absolute -top-1 left-1/2 z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-lg border border-border bg-white px-2 py-1 text-[10px] font-semibold text-on-surface shadow-popover">
+                        {day.count} session{day.count === 1 ? "" : "s"}
+                      </div>
+                    )}
+                    <div
+                      className={`w-full max-w-[44px] rounded-t-xl transition-all duration-300 ${
+                        day.count > 0
+                          ? "bg-gradient-to-t from-[#9F376F] via-[#B74783] to-[#D9B8F5]"
+                          : "bg-gradient-to-t from-[#EADCE5] to-[#F5F2FF]"
+                      } ${active ? "opacity-100 ring-2 ring-primary/20" : "opacity-90"}`}
+                      style={{ height: `${pct}%`, minHeight: 10 }}
                     />
-                  )}
-
-                  {/* Line path */}
-                  {pointsString && (
-                    <polyline
-                      fill="none"
-                      stroke="var(--primary)"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      points={pointsString}
-                    />
-                  )}
-
-                  {/* Interactive Circles & Hover Rings */}
-                  {parsedPoints.map((p, idx) => (
-                    <g key={idx}>
-                      <circle
-                        cx={p.x}
-                        cy={p.y}
-                        r="3.5"
-                        fill="var(--primary)"
-                        fillOpacity="0.3"
-                        className="transition-all duration-200"
-                      />
-                      <circle
-                        cx={p.x}
-                        cy={p.y}
-                        r="2.2"
-                        fill="var(--primary)"
-                        stroke="var(--surface)"
-                        strokeWidth="1"
-                      />
-                      {/* Invisible hover trigger */}
-                      <circle
-                        cx={p.x}
-                        cy={p.y}
-                        r="10"
-                        fill="transparent"
-                        className="cursor-pointer"
-                        onMouseEnter={() => setHoveredPoint(p)}
-                        onMouseLeave={() => setHoveredPoint(null)}
-                      />
-                    </g>
-                  ))}
-                </svg>
-
-                {/* Live Tooltip */}
-                {hoveredPoint && (
-                  <div
-                    className="absolute bg-surface-bright border border-border rounded-lg p-2.5 shadow-popover z-20 pointer-events-none transition-all duration-150 font-sans text-[10px]"
-                    style={{
-                      left: `${hoveredPoint.x}%`,
-                      top: `${hoveredPoint.y}%`,
-                      transform: "translate(-50%, -120%)",
-                    }}
-                  >
-                    <div className="text-on-surface-variant/70 font-semibold uppercase tracking-wider font-mono">
-                      {new Date(hoveredPoint._id).toLocaleDateString("en-US", {
-                        weekday: "short",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </div>
-                    <div className="text-xs font-bold text-on-surface mt-1 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-                      {hoveredPoint.count} Therapy Sessions
-                    </div>
                   </div>
-                )}
+                  <div className="text-center">
+                    <p className="text-[10px] font-semibold text-on-surface-muted">
+                      {day.label}
+                    </p>
+                    <p className="text-[11px] font-bold text-on-surface">{day.count}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {weekTotal === 0 && (
+            <p className="mt-3 rounded-xl border border-dashed border-border bg-[#FFF8FB] px-3 py-2 text-center text-[11px] text-on-surface-muted">
+              No therapy sessions logged this week yet — bars stay ready for live
+              traffic.
+            </p>
+          )}
+        </div>
+
+        {/* Activity feed */}
+        <div className="panel flex flex-col xl:col-span-5">
+          <div className="panel-header">
+            <div>
+              <h2 className="text-base font-bold tracking-tight text-on-surface">
+                Live activity
+              </h2>
+              <p className="text-[11px] text-on-surface-muted">
+                Auth, security, and system events
+              </p>
+            </div>
+            <Link
+              href="/logs"
+              className="text-[11px] font-semibold text-primary hover:underline"
+            >
+              View all
+            </Link>
+          </div>
+
+          <div className="flex-1 divide-y divide-border">
+            {isLogsLoading ? (
+              [...Array(5)].map((_, i) => (
+                <div key={i} className="flex gap-3 px-4 py-3 animate-pulse">
+                  <div className="h-9 w-9 rounded-full bg-[#F1E9EF]" />
+                  <div className="flex-1 space-y-2 py-1">
+                    <div className="h-3 w-1/3 rounded bg-[#F1E9EF]" />
+                    <div className="h-2 w-3/4 rounded bg-[#F1E9EF]" />
+                  </div>
+                </div>
+              ))
+            ) : recentLogs.length === 0 ? (
+              <div className="empty-state py-10">
+                <div className="empty-state-icon">
+                  <span className="material-symbols-outlined">description</span>
+                </div>
+                <p className="text-xs text-on-surface-muted">No recent logs</p>
               </div>
             ) : (
-              <span className="text-[10px] text-on-surface-variant/60 absolute inset-0 flex items-center justify-center font-mono">
-                No session data yet
-              </span>
-            )}
+              recentLogs.map((log: any) => {
+                const isCritical =
+                  log.severity === "CRITICAL" || log.category === "CRISIS";
+                const isWarning =
+                  log.severity === "WARNING" || log.category === "SECURITY";
+                const tone = isCritical
+                  ? "bg-error-container text-error"
+                  : isWarning
+                  ? "bg-warning-container text-warning"
+                  : "bg-primary-container text-primary";
+                const icon = isCritical
+                  ? "priority_high"
+                  : isWarning
+                  ? "shield"
+                  : log.category === "AUTH"
+                  ? "login"
+                  : "info";
+                const title =
+                  log.category === "CRISIS"
+                    ? "Emergency"
+                    : log.category === "AUTH"
+                    ? "Access"
+                    : log.category === "SECURITY"
+                    ? "Security"
+                    : "System";
 
-            {/* X-axis labels */}
-            {parsedPoints.length > 0 && parsedPoints.map((p, idx) => (
-              <div
-                key={idx}
-                className="absolute text-[9px] font-mono text-on-surface-variant/80 select-none pb-1 pointer-events-none"
-                style={{
-                  left: `${p.x}%`,
-                  bottom: "0px",
-                  transform: "translateX(-50%) translateY(22px)",
-                }}
-              >
-                {new Date(p._id).toLocaleDateString("en-US", { weekday: "short" })}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Security & Activity Section */}
-        <div className="card p-6 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-base font-semibold text-on-surface">Recent Alerts & Activity</h3>
-              <span className="material-symbols-outlined text-outline">history</span>
-            </div>
-            
-            <div className="space-y-5">
-              {isLogsLoading ? (
-                [...Array(3)].map((_, i) => (
-                  <div key={i} className="flex gap-3 animate-pulse">
-                    <div className="flex-shrink-0 w-7 h-7 rounded-full bg-surface-container-high/30 border border-border flex items-center justify-center">
-                      <div className="w-4 h-4 rounded-full bg-surface-container-high/50"></div>
+                return (
+                  <div
+                    key={log.id || log._id}
+                    className="flex gap-3 px-4 py-3 transition-colors hover:bg-[#FFF0F6]/70"
+                  >
+                    <div
+                      className={`flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-full ring-1 ring-border ${
+                        log.userProfileImage ? "bg-white" : tone
+                      }`}
+                    >
+                      {log.userProfileImage ? (
+                        <AvatarImage
+                          src={log.userProfileImage}
+                          alt=""
+                          width={36}
+                          height={36}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <span className="material-symbols-outlined text-[16px]">
+                          {icon}
+                        </span>
+                      )}
                     </div>
-                    <div className="flex-1 space-y-2 py-0.5">
-                      <div className="h-3 bg-surface-container-high/50 rounded w-1/3"></div>
-                      <div className="h-2 bg-surface-container-high/40 rounded w-3/4"></div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-semibold text-on-surface">
+                          {title}
+                        </p>
+                        {isCritical && (
+                          <span className="badge-error !px-1.5 !py-0 !text-[9px]">
+                            Critical
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-on-surface-variant">
+                        {log.description}
+                      </p>
                     </div>
                   </div>
-                ))
-              ) : recentLogs.length === 0 ? (
-                <div className="text-center py-6">
-                  <span className="material-symbols-outlined text-[32px] text-on-surface-variant/40 mb-2">description</span>
-                  <p className="text-xs text-on-surface-variant/85">No recent logs recorded.</p>
-                </div>
-              ) : (
-                recentLogs.map((log: any) => {
-                  const isCritical = log.severity === "CRITICAL" || log.category === "CRISIS";
-                  const isWarning = log.severity === "WARNING" || log.category === "SECURITY";
-                  
-                  const bgClass = isCritical 
-                    ? "bg-error/10 border border-error/20" 
-                    : isWarning 
-                    ? "bg-warning/10 border border-warning/20" 
-                    : "bg-primary/10 border border-primary/20";
-                    
-                  const iconClass = isCritical 
-                    ? "text-error" 
-                    : isWarning 
-                    ? "text-warning" 
-                    : "text-primary";
-                    
-                  const iconName = isCritical 
-                    ? "priority_high" 
-                    : isWarning 
-                    ? "shield" 
-                    : log.category === "AUTH" 
-                    ? "login" 
-                    : "info";
+                );
+              })
+            )}
+          </div>
+        </div>
+      </section>
 
-                  const titleText = log.category === "CRISIS"
-                    ? "Emergency Alert Handled"
-                    : log.category === "AUTH"
-                    ? "User Access Logged"
-                    : log.category === "SECURITY"
-                    ? "Security Alert Logged"
-                    : "System Activity Logged";
-
-                  return (
-                    <div key={log.id || log._id} className="flex gap-3">
-                      <div className="relative flex-shrink-0">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center border overflow-hidden ${log.userProfileImage ? 'bg-surface-dim' : bgClass}`}>
-                          {log.userProfileImage ? (
-                            <AvatarImage src={log.userProfileImage} alt="User" width={32} height={32} className="w-full h-full object-cover" />
-                          ) : (
-                            <span className={`material-symbols-outlined ${iconClass} text-[15px]`}>
-                              {iconName}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold text-on-surface">{titleText}</p>
-                        <p className="text-[10px] text-on-surface-variant/85 mt-0.5 font-normal leading-relaxed">
-                          {log.description}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
+      {/* Lower ops row */}
+      <section className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+        <div className="panel p-4 lg:col-span-4">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-bold text-on-surface">Safety pulse</h2>
+            <span className="badge badge-error">Emergency</span>
+          </div>
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between rounded-xl bg-[#FFF0F2] px-3 py-2.5">
+              <span className="text-xs text-on-surface-variant">High-risk sessions</span>
+              <span className="text-sm font-bold text-error">
+                {metrics.weeklyHighRiskSessions || 0}
+              </span>
             </div>
+            <div className="flex items-center justify-between rounded-xl bg-[#FFF8FB] px-3 py-2.5">
+              <span className="text-xs text-on-surface-variant">Needs follow-up</span>
+              <span className="text-sm font-bold text-on-surface">
+                {metrics.needsFollowUpUsers || 0}
+              </span>
+            </div>
+            <div className="flex items-center justify-between rounded-xl bg-[#FFF8FB] px-3 py-2.5">
+              <span className="text-xs text-on-surface-variant">Not recovered</span>
+              <span className="text-sm font-bold text-on-surface">
+                {metrics.notRecoveredUsersThisWeek || 0}
+              </span>
+            </div>
+            <Link href="/emergency" className="soft-btn mt-1 w-full">
+              Open emergency desk
+            </Link>
           </div>
+        </div>
 
-          <Link href="/logs">
-            <button className="w-full mt-6 py-2 text-center text-xs font-semibold text-primary border border-primary/20 rounded-full hover:bg-primary/10 transition-colors font-sans">
-              View All Logs
-            </button>
-          </Link>
+        <div className="panel p-4 lg:col-span-4">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-bold text-on-surface">Care programs</h2>
+            <span className="badge badge-primary">Growth</span>
+          </div>
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between rounded-xl bg-[#F4E8FF]/70 px-3 py-2.5">
+              <span className="text-xs text-on-surface-variant">Active wellness</span>
+              <span className="text-sm font-bold text-on-surface">
+                {metrics.activeWellnessPlans || 0}
+              </span>
+            </div>
+            <div className="flex items-center justify-between rounded-xl bg-[#FFF8FB] px-3 py-2.5">
+              <span className="text-xs text-on-surface-variant">
+                Wellness completion
+              </span>
+              <span className="text-sm font-bold text-on-surface">
+                {metrics.avgWellnessCompletionRate || 0}%
+              </span>
+            </div>
+            <div className="flex items-center justify-between rounded-xl bg-[#FFF8FB] px-3 py-2.5">
+              <span className="text-xs text-on-surface-variant">
+                Assessments in progress
+              </span>
+              <span className="text-sm font-bold text-on-surface">
+                {metrics.assessmentInProgressSessions || 0}
+              </span>
+            </div>
+            <Link href="/wellness" className="soft-btn mt-1 w-full">
+              Manage wellness
+            </Link>
+          </div>
         </div>
-      </div>
 
-      {/* Operational Details Footer */}
-      <div className="mt-8 p-5 card flex flex-col md:flex-row items-start md:items-center justify-between gap-4 font-sans">
-        <div className="flex flex-wrap items-center gap-6">
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-            <span className="text-[11px] text-on-surface font-normal">Secure Connection</span>
+        <div className="panel p-4 lg:col-span-4">
+          <div className="mb-3">
+            <h2 className="text-sm font-bold text-on-surface">Jump to module</h2>
+            <p className="text-[11px] text-on-surface-muted">
+              Fast paths across the admin console
+            </p>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-            <span className="text-[11px] text-on-surface font-normal">Activity Logs Active</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-            <span className="text-[11px] text-on-surface font-normal">System Speed: Fast</span>
+          <div className="space-y-2">
+            <ModuleLink
+              href="/users"
+              icon="group"
+              title="Users"
+              subtitle="Accounts & status"
+            />
+            <ModuleLink
+              href="/sessions"
+              icon="medical_services"
+              title="Sessions"
+              subtitle="Therapy transcripts"
+            />
+            <ModuleLink
+              href="/consultations"
+              icon="event_available"
+              title="Consultations"
+              subtitle="Bookings & schedule"
+            />
+            <ModuleLink
+              href="/settings"
+              icon="settings"
+              title="Settings"
+              subtitle="Crisis thresholds"
+            />
           </div>
         </div>
-        <div className="text-[11px] text-on-surface-variant/80 font-normal">
-          Last System Check: Passed today.
+      </section>
+
+      <section className="flex flex-col items-start justify-between gap-3 rounded-[20px] border border-border bg-white/80 px-4 py-3 shadow-xs sm:flex-row sm:items-center">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+          {[
+            "API healthy",
+            "Logs streaming",
+            "Auth protected",
+          ].map((label) => (
+            <div key={label} className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+              <span className="text-[11px] font-medium text-on-surface">{label}</span>
+            </div>
+          ))}
         </div>
-      </div>
-    </>
+        <p className="text-[11px] text-on-surface-muted">
+          Soul Discovery Admin · live metrics
+        </p>
+      </section>
+    </div>
   );
 }

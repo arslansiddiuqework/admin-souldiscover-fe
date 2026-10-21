@@ -85,33 +85,34 @@ export default function AssessmentsAdminPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full font-sans text-on-surface">
+    <div className="page-shell">
       <PageHeader
+        eyebrow="Clinical"
         title="Assessment Center"
-        description="Catalog metadata, publication status, and completion tracking. Private answer payloads are not exposed here."
+        description="Catalog metadata, publication status, and completion tracking. Private answer payloads are never exposed here."
+        meta={
+          <span className="badge badge-primary">{summary.totalCompletions} completions</span>
+        }
+        actions={
+          <div className="flex gap-2">
+            {(
+              [
+                { id: "catalog" as const, label: "Catalog" },
+                { id: "completions" as const, label: "Completions" },
+              ] as const
+            ).map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setTab(t.id)}
+                className={tab === t.id ? "soft-btn-primary" : "soft-btn"}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        }
       />
-
-      <div className="flex gap-2">
-        {(
-          [
-            { id: "catalog" as const, label: "Catalog" },
-            { id: "completions" as const, label: "Completions" },
-          ] as const
-        ).map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => setTab(t.id)}
-            className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
-              tab === t.id
-                ? "bg-primary text-white"
-                : "bg-surface-bright text-on-surface-variant border border-border"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {[
@@ -121,35 +122,65 @@ export default function AssessmentsAdminPage() {
           { label: "Archived", value: summary.archived },
           { label: "Completions", value: summary.totalCompletions },
         ].map((card) => (
-          <div key={card.label} className="card p-4">
-            <div className="text-[10px] uppercase tracking-wider text-on-surface-variant/70 font-semibold">
-              {card.label}
+          <div
+            key={card.label}
+            className="relative overflow-hidden rounded-[20px] border border-border bg-white/90 p-4 shadow-card"
+          >
+            <div
+              className="pointer-events-none absolute inset-0"
+              style={{
+                backgroundImage:
+                  "radial-gradient(ellipse 80% 80% at 0% 0%, rgba(255,229,240,0.7), transparent 60%)",
+              }}
+            />
+            <div className="relative">
+              <div className="text-[10px] uppercase tracking-wider text-on-surface-variant/70 font-semibold">
+                {card.label}
+              </div>
+              <div className="text-xl font-bold mt-1.5 text-on-surface">{card.value}</div>
             </div>
-            <div className="text-xl font-bold mt-1">{card.value}</div>
           </div>
         ))}
       </div>
 
       {tab === "completions" && (
         <div className="grid grid-cols-2 gap-3">
-          <div className="card p-4">
-            <div className="text-[10px] uppercase tracking-wider text-on-surface-variant/70 font-semibold">
-              In progress
+          <div className="relative overflow-hidden rounded-[20px] border border-border bg-white/90 p-4 shadow-card">
+            <div
+              className="pointer-events-none absolute inset-0"
+              style={{
+                backgroundImage:
+                  "radial-gradient(ellipse 80% 80% at 0% 0%, rgba(241,234,255,0.8), transparent 60%)",
+              }}
+            />
+            <div className="relative">
+              <div className="text-[10px] uppercase tracking-wider text-on-surface-variant/70 font-semibold">
+                In progress
+              </div>
+              <div className="text-xl font-bold mt-1.5">{funnel.inProgressSessions}</div>
             </div>
-            <div className="text-xl font-bold mt-1">{funnel.inProgressSessions}</div>
           </div>
-          <div className="card p-4">
-            <div className="text-[10px] uppercase tracking-wider text-on-surface-variant/70 font-semibold">
-              Abandoned
+          <div className="relative overflow-hidden rounded-[20px] border border-border bg-white/90 p-4 shadow-card">
+            <div
+              className="pointer-events-none absolute inset-0"
+              style={{
+                backgroundImage:
+                  "radial-gradient(ellipse 80% 80% at 0% 0%, rgba(255,229,240,0.7), transparent 60%)",
+              }}
+            />
+            <div className="relative">
+              <div className="text-[10px] uppercase tracking-wider text-on-surface-variant/70 font-semibold">
+                Abandoned
+              </div>
+              <div className="text-xl font-bold mt-1.5">{funnel.abandonedSessions}</div>
             </div>
-            <div className="text-xl font-bold mt-1">{funnel.abandonedSessions}</div>
           </div>
         </div>
       )}
 
       {tab === "catalog" && (
       <>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 card p-4">
+      <div className="filter-bar">
         <div className="field-shell">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/80 text-lg">
             search
@@ -177,7 +208,17 @@ export default function AssessmentsAdminPage() {
         </select>
       </div>
 
-      <div className="card overflow-hidden">
+      <div className="panel">
+        <div className="panel-header">
+          <div>
+            <h2 className="text-sm font-semibold text-on-surface">Instrument catalog</h2>
+            <p className="text-[11px] text-on-surface-variant/70 mt-0.5">
+              Publication status and clinical validation
+            </p>
+          </div>
+          <span className="badge badge-neutral">{pagination.total} instruments</span>
+        </div>
+
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] text-left">
             <thead className="admin-table-head">
@@ -199,15 +240,23 @@ export default function AssessmentsAdminPage() {
                 </tr>
               ) : assessments.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-xs text-on-surface-variant/70">
-                    No assessments found.
+                  <td colSpan={6}>
+                    <div className="empty-state">
+                      <div className="empty-state-icon">
+                        <span className="material-symbols-outlined text-[28px]">quiz</span>
+                      </div>
+                      <p className="text-sm font-semibold text-on-surface">No assessments found</p>
+                      <p className="text-xs text-on-surface-variant max-w-xs">
+                        Try adjusting search or status filters.
+                      </p>
+                    </div>
                   </td>
                 </tr>
               ) : (
                 assessments.map((a) => (
                   <tr
                     key={a.id}
-                    className="hover:bg-[#FFF0F6] cursor-pointer"
+                    className="hover:bg-[#FFF0F6]/80 cursor-pointer transition-colors"
                     onClick={() => void openDetail(a.slug)}
                   >
                     <td className="px-6 py-4">
@@ -229,7 +278,11 @@ export default function AssessmentsAdminPage() {
                     </td>
                     <td className="px-6 py-4 text-xs">{a.version}</td>
                     <td className="px-6 py-4 text-xs">
-                      {a.clinicallyValidated ? "Validated" : "No"}
+                      {a.clinicallyValidated ? (
+                        <span className="badge badge-success text-[10px]">Validated</span>
+                      ) : (
+                        <span className="badge badge-neutral text-[10px]">No</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-xs">{a.completions}</td>
                     <td className="px-6 py-4 text-xs max-w-[220px] truncate">{a.licenseSource}</td>
@@ -241,8 +294,8 @@ export default function AssessmentsAdminPage() {
         </div>
 
         {pagination.totalPages > 1 && (
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 py-3 border-t border-border">
-            <span className="text-xs text-on-surface-variant/70">
+          <div className="pagination-bar text-xs">
+            <span className="text-on-surface-variant/70">
               Page {pagination.page} of {pagination.totalPages}
             </span>
             <div className="flex gap-2">
@@ -250,7 +303,7 @@ export default function AssessmentsAdminPage() {
                 type="button"
                 disabled={page <= 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="text-xs px-3 py-1.5 rounded-full border border-border disabled:opacity-40"
+                className="soft-btn"
               >
                 Previous
               </button>
@@ -258,7 +311,7 @@ export default function AssessmentsAdminPage() {
                 type="button"
                 disabled={page >= pagination.totalPages}
                 onClick={() => setPage((p) => p + 1)}
-                className="text-xs px-3 py-1.5 rounded-full border border-border disabled:opacity-40"
+                className="soft-btn"
               >
                 Next
               </button>
@@ -270,7 +323,17 @@ export default function AssessmentsAdminPage() {
       )}
 
       {tab === "completions" && (
-        <div className="card overflow-hidden">
+        <div className="panel">
+          <div className="panel-header">
+            <div>
+              <h2 className="text-sm font-semibold text-on-surface">Saved completions</h2>
+              <p className="text-[11px] text-on-surface-variant/70 mt-0.5">
+                Answer content is intentionally omitted for privacy
+              </p>
+            </div>
+            <span className="badge badge-neutral">{results.length} on page</span>
+          </div>
+
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] text-left">
               <thead className="admin-table-head">
@@ -294,20 +357,32 @@ export default function AssessmentsAdminPage() {
                   </tr>
                 ) : results.length === 0 ? (
                   <tr>
-                    <td
-                      colSpan={5}
-                      className="px-6 py-8 text-center text-xs text-on-surface-variant/70"
-                    >
-                      No saved completions yet.
+                    <td colSpan={5}>
+                      <div className="empty-state">
+                        <div className="empty-state-icon">
+                          <span className="material-symbols-outlined text-[28px]">assignment_turned_in</span>
+                        </div>
+                        <p className="text-sm font-semibold text-on-surface">No saved completions yet</p>
+                        <p className="text-xs text-on-surface-variant max-w-xs">
+                          Completions appear here once members finish an instrument.
+                        </p>
+                      </div>
                     </td>
                   </tr>
                 ) : (
                   results.map((r) => (
-                    <tr key={r.resultId} className="hover:bg-[#FFF0F6]">
+                    <tr key={r.resultId} className="hover:bg-[#FFF0F6]/80 transition-colors">
                       <td className="px-6 py-4">
-                        <div className="text-sm font-medium">{r.user.name}</div>
-                        <div className="text-[11px] text-on-surface-variant/70">
-                          {r.user.email}
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full bg-primary-container ring-1 ring-border flex items-center justify-center font-semibold text-sm text-primary flex-shrink-0">
+                            {(r.user.name || "U").charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium">{r.user.name}</div>
+                            <div className="text-[11px] text-on-surface-variant/70">
+                              {r.user.email}
+                            </div>
+                          </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -336,8 +411,8 @@ export default function AssessmentsAdminPage() {
             </table>
           </div>
           {resultsTotalPages > 1 && (
-            <div className="flex items-center justify-between px-6 py-3 border-t border-border">
-              <span className="text-xs text-on-surface-variant/70">
+            <div className="pagination-bar text-xs">
+              <span className="text-on-surface-variant/70">
                 Page {resultsPage} of {resultsTotalPages}
               </span>
               <div className="flex gap-2">
@@ -345,7 +420,7 @@ export default function AssessmentsAdminPage() {
                   type="button"
                   disabled={resultsPage <= 1}
                   onClick={() => setResultsPage((p) => Math.max(1, p - 1))}
-                  className="text-xs px-3 py-1.5 rounded border border-white/10 disabled:opacity-40"
+                  className="soft-btn"
                 >
                   Previous
                 </button>
@@ -353,14 +428,14 @@ export default function AssessmentsAdminPage() {
                   type="button"
                   disabled={resultsPage >= resultsTotalPages}
                   onClick={() => setResultsPage((p) => p + 1)}
-                  className="text-xs px-3 py-1.5 rounded border border-white/10 disabled:opacity-40"
+                  className="soft-btn"
                 >
                   Next
                 </button>
               </div>
             </div>
           )}
-          <p className="px-6 py-3 text-[11px] text-on-surface-variant/70 border-t border-border">
+          <p className="px-5 py-3 text-[11px] text-on-surface-variant/70 border-t border-border bg-[#FFF8FB]/40">
             Answer content is intentionally omitted for privacy.
           </p>
         </div>

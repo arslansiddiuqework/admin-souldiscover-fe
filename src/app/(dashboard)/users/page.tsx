@@ -94,13 +94,17 @@ export default function UsersPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full font-sans text-on-surface">
+    <div className="page-shell">
       <PageHeader
+        eyebrow="Directory"
         title="Users"
-        description="Manage all registered user accounts."
+        description="Browse and manage every registered Soul Discovery account — status, emergency posture, and activity at a glance."
+        meta={
+          <span className="badge badge-primary">{pagination.total} total</span>
+        }
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 card p-4">
+      <div className="filter-bar">
         <div className="field-shell">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/80 text-lg">search</span>
           <input
@@ -128,7 +132,17 @@ export default function UsersPage() {
         </select>
       </div>
 
-      <div className="card overflow-hidden">
+      <div className="panel">
+        <div className="panel-header">
+          <div>
+            <h2 className="text-sm font-semibold text-on-surface">All users</h2>
+            <p className="text-[11px] text-on-surface-variant/70 mt-0.5">
+              Click a row to open the full profile drawer
+            </p>
+          </div>
+          <span className="badge badge-neutral">{pagination.total} accounts</span>
+        </div>
+
         <div className="overflow-x-auto">
           <table className="w-full min-w-[800px] text-left">
             <thead className="admin-table-head">
@@ -149,22 +163,30 @@ export default function UsersPage() {
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-xs text-on-surface-variant/70">
-                    No users found.
+                  <td colSpan={5}>
+                    <div className="empty-state">
+                      <div className="empty-state-icon">
+                        <span className="material-symbols-outlined text-[28px]">group_off</span>
+                      </div>
+                      <p className="text-sm font-semibold text-on-surface">No users found</p>
+                      <p className="text-xs text-on-surface-variant max-w-xs">
+                        Try a different search or clear the status filter.
+                      </p>
+                    </div>
                   </td>
                 </tr>
               ) : (
                 users.map((user: any) => (
                   <tr
                     key={user._id}
-                    className="hover:bg-[#FFF0F6] transition-colors cursor-pointer group"
+                    className="hover:bg-[#FFF0F6]/80 transition-colors cursor-pointer group"
                     onClick={() => openUser(user)}
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-surface-dim border border-outline-variant flex items-center justify-center font-semibold text-xs text-primary shadow-sm overflow-hidden">
+                        <div className="h-10 w-10 rounded-full bg-primary-container ring-1 ring-border flex items-center justify-center font-semibold text-sm text-primary overflow-hidden flex-shrink-0">
                           {user.profileImage ? (
-                            <AvatarImage src={user.profileImage} alt={user.name} width={32} height={32} className="w-full h-full object-cover" />
+                            <AvatarImage src={user.profileImage} alt={user.name} width={40} height={40} className="w-full h-full object-cover" />
                           ) : (
                             user.name.charAt(0).toUpperCase()
                           )}
@@ -190,7 +212,7 @@ export default function UsersPage() {
                     </td>
                     <td className="px-6 py-4">
                       {hasActiveAlert(user) ? (
-                        <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-semibold bg-error text-on-error uppercase tracking-wider animate-pulse">
+                        <span className="badge badge-error uppercase tracking-wider text-[10px] animate-pulse">
                           {user.lastEscalation.riskLevel}
                         </span>
                       ) : user.hasEmergencyContacts ? (
@@ -208,7 +230,7 @@ export default function UsersPage() {
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={() => openUser(user)}
-                          className="p-1.5 border border-outline-variant hover:bg-surface-container-high rounded-lg text-on-surface-variant transition-colors"
+                          className="soft-btn !px-2.5 !py-1.5"
                           title="View Details"
                         >
                           <span className="material-symbols-outlined text-[16px]">visibility</span>
@@ -219,7 +241,7 @@ export default function UsersPage() {
                               e.stopPropagation();
                               setUserToDelete(user);
                             }}
-                            className="p-1.5 border border-outline-variant hover:bg-error/10 hover:border-error/40 text-error rounded-lg transition-colors"
+                            className="soft-btn !px-2.5 !py-1.5 text-error hover:border-error/40 hover:bg-error/10"
                             title="Delete User"
                           >
                             <span className="material-symbols-outlined text-[16px]">delete</span>
@@ -234,21 +256,27 @@ export default function UsersPage() {
           </table>
         </div>
 
-        <div className="px-6 py-4 bg-surface-dim/50 border-t border-border flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between font-sans text-xs">
+        <div className="pagination-bar text-xs">
           <span className="text-on-surface-variant/80">
             Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
           </span>
           <div className="flex gap-2">
-            <Button variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+            <button
+              type="button"
+              className="soft-btn"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => p - 1)}
+            >
               Previous
-            </Button>
-            <Button
-              variant="outline"
+            </button>
+            <button
+              type="button"
+              className="soft-btn"
               disabled={page >= pagination.totalPages}
               onClick={() => setPage((p) => p + 1)}
             >
               Next
-            </Button>
+            </button>
           </div>
         </div>
       </div>
@@ -261,9 +289,9 @@ export default function UsersPage() {
         }}
         title={
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-full bg-surface-dim border border-outline-variant flex items-center justify-center font-bold text-[10px] text-primary shadow-sm overflow-hidden flex-shrink-0">
+            <div className="h-10 w-10 rounded-full bg-primary-container ring-1 ring-border flex items-center justify-center font-bold text-sm text-primary overflow-hidden flex-shrink-0">
               {selectedUser?.profileImage ? (
-                <AvatarImage src={selectedUser.profileImage} alt={selectedUser.name} width={28} height={28} className="w-full h-full object-cover" />
+                <AvatarImage src={selectedUser.profileImage} alt={selectedUser.name} width={40} height={40} className="w-full h-full object-cover" />
               ) : (
                 (selectedUser?.name || "Unknown").charAt(0).toUpperCase()
               )}
