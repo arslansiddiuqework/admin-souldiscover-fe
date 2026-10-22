@@ -1,13 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Lock, Eye, EyeOff, Check, X } from "lucide-react";
 import { useToast } from "@/components/providers";
 import { AdminBrandLogo } from "@/components/brand-logo";
 import { BRAND_NAME } from "@/lib/branding";
+import { authService } from "@/services/authService";
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
+  const searchParams = useSearchParams();
+  const resetToken = searchParams.get("token") || "";
+
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -18,7 +22,6 @@ export default function ResetPasswordPage() {
   const { showToast } = useToast();
   const router = useRouter();
 
-  // Dynamic validation checklist
   const validations = {
     length: password.length >= 8,
     hasNumber: /\d/.test(password),
@@ -28,6 +31,14 @@ export default function ResetPasswordPage() {
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!resetToken) {
+      showToast(
+        "Reset link is missing or invalid. Request a new link from the login page.",
+        "error"
+      );
+      return;
+    }
 
     if (!validations.length || !validations.hasNumber || !validations.hasSpecial) {
       showToast("Password does not meet safety criteria.", "error");
@@ -42,18 +53,17 @@ export default function ResetPasswordPage() {
     setIsResetting(true);
 
     try {
-      // Simulate secure API call delay to update mock database
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
+      await authService.resetPassword(resetToken, password);
       showToast("Password updated successfully!", "success");
       setIsDone(true);
-
-      // Auto-redirect to login screen after 3 seconds
       setTimeout(() => {
         router.push("/login");
       }, 3000);
-    } catch {
-      showToast("Failed to reset password. Please try again.", "error");
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message ||
+        "Failed to reset password. The link may be expired.";
+      showToast(message, "error");
     } finally {
       setIsResetting(false);
     }
@@ -65,7 +75,7 @@ export default function ResetPasswordPage() {
       <div
         className="pointer-events-none absolute left-[-10%] top-[-20%] z-0 h-[800px] w-[800px] rounded-full"
         style={{
-          background: "radial-gradient(circle, rgba(183, 71, 131, 0.16) 0%, rgba(183, 71, 131, 0) 70%)",
+          background: "radial-gradient(circle, rgba(120, 99, 198, 0.22) 0%, rgba(120, 99, 198, 0) 70%)",
           filter: "blur(80px)"
         }}
       />
@@ -117,13 +127,19 @@ export default function ResetPasswordPage() {
             ) : (
               <>
                 <div className="mb-6 text-center">
-                  <p className="label-eyebrow mb-2 text-primary">Secure Access</p>
+                  <p className="label-eyebrow mb-2 !text-[#7863C6]">Secure Access</p>
                   <h2 className="mb-2 font-display text-3xl font-bold tracking-tight text-on-surface">
                     Reset Password
                   </h2>
                   <p className="mx-auto max-w-[280px] text-xs leading-relaxed text-on-surface-variant">
                     Configure your new administrator credential to secure your access.
                   </p>
+                  {!resetToken ? (
+                    <p className="mx-auto mt-3 max-w-[300px] rounded-xl border border-error/20 bg-error-container px-3 py-2 text-[11px] text-error">
+                      No reset token found in this link. Open the email link again or request a
+                      new reset from Sign In.
+                    </p>
+                  ) : null}
                 </div>
 
                 <form className="space-y-4" onSubmit={handleResetPassword}>
@@ -132,7 +148,7 @@ export default function ResetPasswordPage() {
                       New Password
                     </label>
                     <div className="field-shell">
-                      <Lock className="absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-primary/70" />
+                      <Lock className="absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-[#7863C6]" />
                       <input
                         className="field-input py-3 pl-12 pr-12 text-xs"
                         id="password"
@@ -144,7 +160,7 @@ export default function ResetPasswordPage() {
                         onChange={(e) => setPassword(e.target.value)}
                       />
                       <button
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-primary/70 transition-colors hover:text-primary focus:outline-none"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-[#7863C6] transition-colors hover:text-[#5B3FA8] focus:outline-none"
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                       >
@@ -161,7 +177,7 @@ export default function ResetPasswordPage() {
                       Confirm Password
                     </label>
                     <div className="field-shell">
-                      <Lock className="absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-primary/70" />
+                      <Lock className="absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-[#7863C6]" />
                       <input
                         className="field-input py-3 pl-12 pr-12 text-xs"
                         id="confirm-password"
@@ -173,7 +189,7 @@ export default function ResetPasswordPage() {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                       />
                       <button
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-primary/70 transition-colors hover:text-primary focus:outline-none"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-[#7863C6] transition-colors hover:text-[#5B3FA8] focus:outline-none"
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       >
@@ -193,7 +209,7 @@ export default function ResetPasswordPage() {
 
                     <div className="flex items-center gap-2 text-xs">
                       {validations.length ? (
-                        <Check className="h-3.5 w-3.5 text-primary" />
+                        <Check className="h-3.5 w-3.5 text-[#287D58]" />
                       ) : (
                         <X className="h-3.5 w-3.5 text-error" />
                       )}
@@ -208,7 +224,7 @@ export default function ResetPasswordPage() {
 
                     <div className="flex items-center gap-2 text-xs">
                       {validations.hasNumber ? (
-                        <Check className="h-3.5 w-3.5 text-primary" />
+                        <Check className="h-3.5 w-3.5 text-[#287D58]" />
                       ) : (
                         <X className="h-3.5 w-3.5 text-error" />
                       )}
@@ -223,7 +239,7 @@ export default function ResetPasswordPage() {
 
                     <div className="flex items-center gap-2 text-xs">
                       {validations.hasSpecial ? (
-                        <Check className="h-3.5 w-3.5 text-primary" />
+                        <Check className="h-3.5 w-3.5 text-[#287D58]" />
                       ) : (
                         <X className="h-3.5 w-3.5 text-error" />
                       )}
@@ -238,7 +254,7 @@ export default function ResetPasswordPage() {
 
                     <div className="flex items-center gap-2 text-xs">
                       {validations.match ? (
-                        <Check className="h-3.5 w-3.5 text-primary" />
+                        <Check className="h-3.5 w-3.5 text-[#287D58]" />
                       ) : (
                         <X className="h-3.5 w-3.5 text-error" />
                       )}
@@ -253,10 +269,11 @@ export default function ResetPasswordPage() {
                   </div>
 
                   <button
-                    className="mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-primary py-3.5 text-xs font-bold tracking-wider text-primary-foreground shadow-primary transition-all hover:brightness-105 disabled:opacity-75"
+                    className="mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#B74783] via-[#9658B7] to-[#7863C6] py-3.5 text-xs font-bold tracking-wider text-white shadow-violet transition-all hover:brightness-105 disabled:opacity-75"
                     type="submit"
                     disabled={
                       isResetting ||
+                      !resetToken ||
                       !validations.length ||
                       !validations.hasNumber ||
                       !validations.hasSpecial ||
@@ -278,5 +295,19 @@ export default function ResetPasswordPage() {
         </p>
       </footer>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center atmosphere-base">
+          <span className="h-9 w-9 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
+        </div>
+      }
+    >
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

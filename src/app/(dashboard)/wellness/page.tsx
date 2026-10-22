@@ -5,8 +5,19 @@ import { useWellness } from "@/hooks/useWellness";
 import { wellnessService } from "@/services/wellnessService";
 import { Drawer } from "@/components/ui/Drawer";
 import { useToast } from "@/components/providers";
+import { PageHeader } from "@/components/layout/PageHeader";
 
-function MiniRing({ value, size = 56, stroke = 5 }: { value: number; size?: number; stroke?: number }) {
+function MiniRing({
+  value,
+  size = 56,
+  stroke = 5,
+  color = "#287D58",
+}: {
+  value: number;
+  size?: number;
+  stroke?: number;
+  color?: string;
+}) {
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const pct = Math.max(0, Math.min(100, value));
@@ -14,13 +25,20 @@ function MiniRing({ value, size = 56, stroke = 5 }: { value: number; size?: numb
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#F7F0F5" strokeWidth={stroke} />
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#B74783"
+          stroke="#DDF1E6"
+          strokeWidth={stroke}
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={color}
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={circumference}
@@ -29,16 +47,40 @@ function MiniRing({ value, size = 56, stroke = 5 }: { value: number; size?: numb
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-[11px] font-bold tabular-nums text-[#49263D]">{Math.round(pct)}%</span>
+        <span className="text-[11px] font-bold tabular-nums text-[#49263D]">
+          {Math.round(pct)}%
+        </span>
       </div>
     </div>
   );
 }
 
-function statusTone(status?: string) {
-  if (status === "completed") return "bg-[#E8F6EF] text-[#287D58] ring-[#C6E8D6]";
-  if (status === "paused") return "bg-[#FFF1E9] text-[#D4845A] ring-[#F0D5C4]";
-  return "bg-[#FFF0F6] text-[#B74783] ring-[#F0CADA]";
+/** Status → pill (paused = peach, completed = mint, active = sky). */
+function statusPill(status?: string) {
+  if (status === "completed") return "badge-success";
+  if (status === "paused") return "badge-peach";
+  return "badge-sky";
+}
+
+function ringColor(status?: string) {
+  if (status === "paused") return "#C46B4A";
+  if (status === "completed") return "#287D58";
+  return "#2F9E6F";
+}
+
+function DetailRow({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-[#795A70]">{label}</span>
+      <span className="text-right font-semibold capitalize text-[#49263D]">{children}</span>
+    </div>
+  );
 }
 
 export default function WellnessPage() {
@@ -82,69 +124,83 @@ export default function WellnessPage() {
 
   const weekTiles = useMemo(
     () => [
-      { id: "all", label: "All", value: summary.totalEnrollments },
-      { id: "active", label: "Active", value: summary.active },
-      { id: "completed", label: "Done", value: summary.completed },
-      { id: "paused", label: "Paused", value: summary.paused },
+      { id: "all", label: "All", value: summary.totalEnrollments, icon: "spa" },
+      { id: "active", label: "Active", value: summary.active, icon: "play_circle" },
+      { id: "completed", label: "Done", value: summary.completed, icon: "task_alt" },
+      { id: "paused", label: "Paused", value: summary.paused, icon: "pause_circle" },
     ],
     [summary]
   );
 
-  return (
-    <div className="page-shell !space-y-0">
-      {/* Atmosphere — wellness hub language */}
-      <div className="relative -mx-1 overflow-hidden rounded-[28px] border border-[#EADCE5]/90 bg-[#FBF9FF] shadow-[0_18px_50px_rgba(123,57,98,0.08)]">
-        <div aria-hidden className="pointer-events-none absolute inset-0">
-          <div className="absolute inset-x-0 top-0 h-56 bg-[radial-gradient(ellipse_at_top,rgba(183,71,131,0.12),transparent_58%)]" />
-          <div className="absolute -left-16 bottom-8 h-48 w-48 rounded-full bg-[rgba(183,71,131,0.07)] blur-3xl" />
-          <div className="absolute right-0 top-24 h-56 w-56 rounded-full bg-[rgba(120,99,198,0.1)] blur-3xl" />
-        </div>
+  /** Active tile styling per status — mint family, paused flips to peach. */
+  const tileActive = (id: string) =>
+    id === "paused"
+      ? "bg-gradient-to-br from-[#D98262] to-[#C46B4A] text-white shadow-[0_8px_18px_rgba(196,107,74,0.3)]"
+      : id === "active"
+        ? "bg-gradient-to-br from-[#4F7FE8] to-[#3E69CC] text-white shadow-[0_8px_18px_rgba(79,127,232,0.28)]"
+        : "bg-gradient-to-br from-[#34966D] to-[#287D58] text-white shadow-[0_8px_18px_rgba(40,125,88,0.28)]";
 
-        {/* Frosted desk */}
-        <div className="relative m-3 overflow-hidden rounded-[24px] border border-[#EADCE5]/85 bg-white/82 shadow-[0_14px_40px_rgba(123,57,98,0.08)] backdrop-blur-xl sm:m-4">
-          {/* Desk header */}
-          <header className="relative border-b border-[#EADCE5]/70 bg-[linear-gradient(105deg,#FFF7FB_0%,#FFFFFF_42%,#F7F1FF_100%)] px-4 py-4 sm:px-6 sm:py-5">
+  return (
+    <div className="page-shell !space-y-4">
+      <PageHeader
+        tone="mint"
+        eyebrow="Wellness desk"
+        title="Member plan journeys"
+        description="Follow every enrollment — completion rings, streak momentum, and paused plans that need a nudge."
+        meta={
+          <>
+            <span className="badge-success">
+              <span className="material-symbols-outlined text-[13px]">groups</span>
+              {summary.totalEnrollments} enrolled
+            </span>
+            <span className="badge-sky">{summary.active} active</span>
+            <span className="badge-peach">
+              <span className="material-symbols-outlined text-[13px]">pause_circle</span>
+              {summary.paused} paused
+            </span>
+          </>
+        }
+        aside={
+          <div className="relative mx-auto hidden h-28 w-32 shrink-0 items-center justify-center lg:flex">
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-y-0 right-0 w-1/3 bg-[radial-gradient(ellipse_at_right,rgba(217,184,245,0.3),transparent_70%)]"
+              className="absolute inset-0 rounded-[28px] bg-[#86EFAC]/50 blur-2xl"
             />
-            <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex min-w-0 items-center gap-3.5">
-                <span className="relative flex h-12 w-12 shrink-0 items-center justify-center">
-                  <span aria-hidden className="absolute inset-0 rounded-full bg-[#B74783]/15" />
-                  <span className="relative flex h-10 w-10 items-center justify-center rounded-full bg-[#B74783] text-white shadow-[0_8px_18px_rgba(183,71,131,0.32)]">
-                    <span className="material-symbols-outlined text-[20px]">spa</span>
-                  </span>
-                </span>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#B74783]">
-                    Wellness desk
-                  </p>
-                  <h1 className="truncate text-[1.2rem] font-bold tracking-[-0.03em] text-[#49263D] sm:text-[1.4rem]">
-                    Member plan journeys
-                  </h1>
-                  <p className="mt-0.5 text-[12px] text-[#795A70]">
-                    Continue the same desk language as the app — today&apos;s enrollments first.
-                  </p>
-                </div>
-              </div>
-
-              {/* Compact Day/Done chips — not a KPI strip */}
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-[#49263D] ring-1 ring-[#EADCE5]">
-                  <span className="material-symbols-outlined text-[14px] text-primary">groups</span>
-                  {summary.totalEnrollments} enrolled
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FFF0F6] px-3 py-1.5 text-[11px] font-semibold text-[#B74783] ring-1 ring-[#F0CADA]">
-                  <span className="material-symbols-outlined text-[14px]">donut_large</span>
-                  {summary.avgCompletionRate}% avg
-                </span>
+            <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-[0_16px_36px_rgba(40,125,88,0.25)] ring-4 ring-[#DDF1E6]">
+              <div className="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-gradient-to-br from-[#34966D] to-[#287D58] text-white">
+                <span className="material-symbols-outlined text-[34px]">spa</span>
               </div>
             </div>
-          </header>
+            <span className="absolute -right-1 top-1 flex items-center gap-0.5 rounded-full bg-[#FFF1E9] px-2 py-1 text-[10px] font-bold text-[#C46B4A] shadow-lifted ring-1 ring-[#F0D5C4]">
+              <span className="material-symbols-outlined text-[13px]">
+                local_fire_department
+              </span>
+              {summary.avgCompletionRate}%
+            </span>
+          </div>
+        }
+      />
 
-          {/* Week-tile status selector */}
-          <div className="border-b border-[#EADCE5]/60 px-4 py-3 sm:px-6">
+      {/* Mint frosted desk */}
+      <div className="relative -mx-1 overflow-hidden rounded-[28px] border border-[#CFE9DB] bg-[#F4FBF7] shadow-[0_18px_50px_rgba(40,125,88,0.1)]">
+        <div aria-hidden className="pointer-events-none absolute inset-0">
+          <div className="absolute inset-x-0 top-0 h-56 bg-[radial-gradient(ellipse_at_top,rgba(40,125,88,0.14),transparent_58%)]" />
+          <div className="absolute -left-16 bottom-8 h-48 w-48 rounded-full bg-[rgba(134,239,172,0.28)] blur-3xl" />
+          <div className="absolute right-0 top-24 h-56 w-56 rounded-full bg-[rgba(79,127,232,0.12)] blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 h-40 w-40 rounded-full bg-[rgba(196,107,74,0.08)] blur-3xl" />
+        </div>
+
+        <div className="relative m-3 overflow-hidden rounded-[24px] border border-[#CFE9DB]/90 bg-white/80 shadow-[0_14px_40px_rgba(40,125,88,0.09)] backdrop-blur-xl sm:m-4">
+          {/* Status tile selector */}
+          <div className="border-b border-[#DDF1E6] bg-[linear-gradient(105deg,#F4FBF7_0%,#FFFFFF_45%,#EEF4FF_100%)] px-4 py-4 sm:px-6">
+            <div className="mb-3 flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#EAF7EF] text-[#287D58]">
+                <span className="material-symbols-outlined text-[16px]">tune</span>
+              </span>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#287D58]">
+                Filter by journey state
+              </p>
+            </div>
             <div className="flex gap-2 overflow-x-auto pb-0.5">
               {weekTiles.map((tile) => {
                 const active = status === tile.id;
@@ -156,17 +212,20 @@ export default function WellnessPage() {
                       setStatus(tile.id);
                       setPage(1);
                     }}
-                    className={`min-w-[4.5rem] shrink-0 rounded-2xl px-3 py-2.5 text-left transition-all ${
+                    className={`min-w-[5.5rem] shrink-0 rounded-2xl px-3.5 py-2.5 text-left transition-all ${
                       active
-                        ? "bg-gradient-to-br from-[#C45A92] to-[#B74783] text-white shadow-[0_8px_18px_rgba(183,71,131,0.28)]"
-                        : "bg-[#FFF8FB] text-[#49263D] ring-1 ring-[#EADCE5] hover:ring-[#F0CADA]"
+                        ? tileActive(tile.id)
+                        : "bg-white text-[#49263D] ring-1 ring-[#DDF1E6] hover:ring-[#9FD6B9]"
                     }`}
                   >
                     <p
-                      className={`text-[9px] font-bold uppercase tracking-[0.12em] ${
-                        active ? "text-white/80" : "text-[#927C8B]"
+                      className={`flex items-center gap-1 text-[9px] font-bold uppercase tracking-[0.12em] ${
+                        active ? "text-white/85" : "text-[#927C8B]"
                       }`}
                     >
+                      <span className="material-symbols-outlined text-[12px]">
+                        {tile.icon}
+                      </span>
                       {tile.label}
                     </p>
                     <p className="mt-0.5 text-lg font-bold tabular-nums">{tile.value}</p>
@@ -177,9 +236,9 @@ export default function WellnessPage() {
           </div>
 
           {/* Search */}
-          <div className="px-4 py-3 sm:px-6">
-            <div className="field-shell max-w-lg">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-lg text-on-surface-variant/80">
+          <div className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <div className="field-shell w-full max-w-lg">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-lg text-[#287D58]">
                 search
               </span>
               <input
@@ -189,6 +248,10 @@ export default function WellnessPage() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
+            <span className="inline-flex items-center gap-1.5 self-start rounded-full bg-[#EAF7EF] px-3 py-1.5 text-[11px] font-semibold text-[#287D58] ring-1 ring-[#C6E8D6] sm:self-auto">
+              <span className="material-symbols-outlined text-[14px]">donut_large</span>
+              {summary.avgCompletionRate}% avg completion
+            </span>
           </div>
 
           {/* Journey cards grid */}
@@ -196,12 +259,12 @@ export default function WellnessPage() {
             {isLoading ? (
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} className="h-40 animate-pulse rounded-[22px] bg-[#FFF0F6]/70" />
+                  <div key={i} className="h-40 animate-pulse rounded-[22px] bg-[#EAF7EF]/80" />
                 ))}
               </div>
             ) : plans.length === 0 ? (
-              <div className="empty-state rounded-[22px] border border-dashed border-[#EADCE5] bg-white/60 py-14">
-                <div className="empty-state-icon">
+              <div className="empty-state rounded-[22px] border border-dashed border-[#CFE9DB] bg-white/60 py-14">
+                <div className="empty-state-icon !bg-[#EAF7EF] !text-[#287D58]">
                   <span className="material-symbols-outlined text-[28px]">spa</span>
                 </div>
                 <p className="text-sm font-semibold text-on-surface">No wellness enrollments yet</p>
@@ -211,63 +274,97 @@ export default function WellnessPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {plans.map((plan) => (
-                  <button
-                    key={plan._id}
-                    type="button"
-                    onClick={() => openDetail(plan)}
-                    className="group flex flex-col rounded-[22px] border border-[#EADCE5]/90 bg-white/95 p-4 text-left shadow-[0_8px_24px_rgba(123,57,98,0.05)] transition-all hover:-translate-y-0.5 hover:border-[#F0CADA] hover:shadow-[0_14px_32px_rgba(183,71,131,0.12)]"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex min-w-0 items-center gap-2.5">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#FFF0F6] text-sm font-bold text-primary ring-1 ring-[#F0CADA]">
-                          {(plan.user?.name || "U").charAt(0).toUpperCase()}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-[#49263D] group-hover:text-primary">
-                            {plan.user?.name || "Unknown"}
-                          </p>
-                          <p className="truncate text-[10px] text-[#927C8B]">{plan.user?.email}</p>
-                        </div>
-                      </div>
+                {plans.map((plan) => {
+                  const paused = plan.status === "paused";
+                  return (
+                    <button
+                      key={plan._id}
+                      type="button"
+                      onClick={() => openDetail(plan)}
+                      className={`group relative flex flex-col overflow-hidden rounded-[22px] border bg-white/95 p-4 text-left shadow-[0_8px_24px_rgba(40,125,88,0.06)] transition-all hover:-translate-y-0.5 ${
+                        paused
+                          ? "border-[#F0D5C4] hover:border-[#E5B9A0] hover:shadow-[0_14px_32px_rgba(196,107,74,0.16)]"
+                          : "border-[#DDF1E6] hover:border-[#9FD6B9] hover:shadow-[0_14px_32px_rgba(40,125,88,0.16)]"
+                      }`}
+                    >
                       <span
-                        className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ring-1 ${statusTone(
-                          plan.status
-                        )}`}
-                      >
-                        {plan.status}
-                      </span>
-                    </div>
-
-                    <p className="mt-3 line-clamp-1 text-[13px] font-semibold tracking-tight text-[#49263D]">
-                      {plan.title}
-                    </p>
-                    <p className="mt-0.5 truncate text-[11px] capitalize text-[#795A70]">
-                      {(plan.catalogSlug || plan.primaryGoal || "").replace(/_/g, " ")}
-                    </p>
-
-                    <div className="mt-4 flex items-center justify-between gap-3 border-t border-[#EADCE5]/70 pt-3">
-                      <MiniRing value={plan.completionRate || 0} />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#927C8B]">
-                          Tasks
-                        </p>
-                        <p className="text-sm font-bold tabular-nums text-[#49263D]">
-                          {plan.tasksCompleted}/{plan.tasksTotal}
-                        </p>
+                        aria-hidden
+                        className={`absolute inset-x-0 top-0 h-[3px] ${
+                          paused
+                            ? "bg-gradient-to-r from-[#C46B4A] to-[#EBAE92]"
+                            : "bg-gradient-to-r from-[#287D58] to-[#7CCBA3]"
+                        }`}
+                      />
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-2.5">
+                          <div
+                            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold ring-1 ${
+                              paused
+                                ? "bg-[#FFF1E9] text-[#C46B4A] ring-[#F0D5C4]"
+                                : "bg-[#EAF7EF] text-[#287D58] ring-[#C6E8D6]"
+                            }`}
+                          >
+                            {(plan.user?.name || "U").charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <p
+                              className={`truncate text-sm font-semibold text-[#49263D] ${
+                                paused
+                                  ? "group-hover:text-[#C46B4A]"
+                                  : "group-hover:text-[#287D58]"
+                              }`}
+                            >
+                              {plan.user?.name || "Unknown"}
+                            </p>
+                            <p className="truncate text-[10px] text-[#927C8B]">
+                              {plan.user?.email}
+                            </p>
+                          </div>
+                        </div>
+                        <span
+                          className={`shrink-0 text-[9px] uppercase tracking-wider ${statusPill(
+                            plan.status
+                          )}`}
+                        >
+                          {plan.status}
+                        </span>
                       </div>
-                      <div className="text-right">
-                        <p className="flex items-center justify-end gap-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#D4845A]">
-                          <span className="material-symbols-outlined text-[14px]">local_fire_department</span>
-                          Streak
-                        </p>
-                        <p className="text-sm font-bold tabular-nums text-[#49263D]">
-                          {plan.currentStreak}d
-                        </p>
+
+                      <p className="mt-3 line-clamp-1 text-[13px] font-semibold tracking-tight text-[#49263D]">
+                        {plan.title}
+                      </p>
+                      <p className="mt-0.5 truncate text-[11px] capitalize text-[#795A70]">
+                        {(plan.catalogSlug || plan.primaryGoal || "").replace(/_/g, " ")}
+                      </p>
+
+                      <div className="mt-4 flex items-center justify-between gap-3 border-t border-[#E6F3EC] pt-3">
+                        <MiniRing
+                          value={plan.completionRate || 0}
+                          color={ringColor(plan.status)}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-[#927C8B]">
+                            Tasks
+                          </p>
+                          <p className="text-sm font-bold tabular-nums text-[#49263D]">
+                            {plan.tasksCompleted}/{plan.tasksTotal}
+                          </p>
+                        </div>
+                        <div className="rounded-xl bg-[#FFF1E9] px-2.5 py-1.5 text-right ring-1 ring-[#F0D5C4]">
+                          <p className="flex items-center justify-end gap-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#C46B4A]">
+                            <span className="material-symbols-outlined text-[14px]">
+                              local_fire_department
+                            </span>
+                            Streak
+                          </p>
+                          <p className="text-sm font-bold tabular-nums text-[#49263D]">
+                            {plan.currentStreak}d
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
             )}
 
@@ -286,7 +383,7 @@ export default function WellnessPage() {
                 </button>
                 <button
                   type="button"
-                  className="soft-btn"
+                  className="soft-btn !border-[#C6E8D6] !bg-[#EAF7EF] !text-[#287D58] hover:!bg-[#DDF1E6]"
                   disabled={page >= pagination.totalPages}
                   onClick={() => setPage((p) => p + 1)}
                 >
@@ -310,65 +407,89 @@ export default function WellnessPage() {
         <div className="space-y-4 text-xs">
           {detailLoading ? (
             <div className="space-y-3">
-              <div className="h-28 animate-pulse rounded-2xl bg-[#FFF0F6]" />
-              <div className="h-20 animate-pulse rounded-2xl bg-[#FFF0F6]" />
+              <div className="h-28 animate-pulse rounded-2xl bg-[#EAF7EF]" />
+              <div className="h-20 animate-pulse rounded-2xl bg-[#EAF7EF]" />
             </div>
           ) : (
             <>
-              <div className="space-y-3 rounded-[22px] border border-[#EADCE5]/90 bg-white p-4 shadow-[0_8px_24px_rgba(123,57,98,0.05)]">
-                <div className="flex justify-between">
-                  <span className="text-[#795A70]">User</span>
-                  <span className="font-semibold text-[#49263D]">
+              <div className="relative space-y-3 overflow-hidden rounded-[22px] border border-[#CFE9DB] bg-white p-4 shadow-[0_8px_24px_rgba(40,125,88,0.07)]">
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0"
+                  style={{
+                    backgroundImage:
+                      "radial-gradient(ellipse 70% 60% at 0% 0%, rgba(234,247,239,0.95), transparent 55%), radial-gradient(ellipse 40% 50% at 100% 100%, rgba(255,241,233,0.7), transparent 60%)",
+                  }}
+                />
+                <div className="relative space-y-3">
+                  <DetailRow label="User">
                     {detail?.user?.name || selected?.user?.name}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#795A70]">Status</span>
-                  <span className="font-semibold capitalize text-[#49263D]">
-                    {detail?.plan?.status || selected?.status}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#795A70]">Goal</span>
-                  <span className="font-semibold capitalize text-[#49263D]">
-                    {(detail?.plan?.primaryGoal || selected?.primaryGoal || "").replace(/_/g, " ")}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-[#795A70]">Completion</p>
-                    <p className="mt-0.5 text-lg font-bold text-[#49263D]">
-                      {detail?.plan?.completionRate ?? selected?.completionRate}%
-                    </p>
+                  </DetailRow>
+                  <DetailRow label="Status">
+                    <span
+                      className={`text-[10px] uppercase tracking-wider ${statusPill(
+                        detail?.plan?.status || selected?.status
+                      )}`}
+                    >
+                      {detail?.plan?.status || selected?.status}
+                    </span>
+                  </DetailRow>
+                  <DetailRow label="Goal">
+                    {(detail?.plan?.primaryGoal || selected?.primaryGoal || "").replace(
+                      /_/g,
+                      " "
+                    )}
+                  </DetailRow>
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-[#795A70]">Completion</p>
+                      <p className="mt-0.5 text-lg font-bold text-[#287D58]">
+                        {detail?.plan?.completionRate ?? selected?.completionRate}%
+                      </p>
+                    </div>
+                    <MiniRing
+                      value={detail?.plan?.completionRate ?? selected?.completionRate ?? 0}
+                      size={64}
+                      stroke={6}
+                      color={ringColor(detail?.plan?.status || selected?.status)}
+                    />
                   </div>
-                  <MiniRing
-                    value={detail?.plan?.completionRate ?? selected?.completionRate ?? 0}
-                    size={64}
-                    stroke={6}
-                  />
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#795A70]">Streak</span>
-                  <span className="font-semibold text-[#49263D]">
-                    {detail?.plan?.currentStreak ?? selected?.currentStreak} / longest{" "}
-                    {detail?.plan?.longestStreak ?? selected?.longestStreak}
-                  </span>
+                  <div className="flex items-center justify-between rounded-xl bg-[#FFF1E9] px-3 py-2 ring-1 ring-[#F0D5C4]">
+                    <span className="flex items-center gap-1 font-semibold text-[#C46B4A]">
+                      <span className="material-symbols-outlined text-[15px]">
+                        local_fire_department
+                      </span>
+                      Streak
+                    </span>
+                    <span className="font-semibold text-[#49263D]">
+                      {detail?.plan?.currentStreak ?? selected?.currentStreak} / longest{" "}
+                      {detail?.plan?.longestStreak ?? selected?.longestStreak}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              <details className="rounded-[22px] border border-[#EADCE5]/90 bg-white open:pb-0" open>
+              <details
+                className="rounded-[22px] border border-[#CFE9DB] bg-white open:pb-0"
+                open
+              >
                 <summary className="cursor-pointer list-none px-4 py-3 font-semibold text-[#49263D] [&::-webkit-details-marker]:hidden">
                   <span className="flex items-center justify-between">
-                    Journey details
+                    <span className="flex items-center gap-2">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#EAF7EF] text-[#287D58]">
+                        <span className="material-symbols-outlined text-[15px]">route</span>
+                      </span>
+                      Journey details
+                    </span>
                     <span className="material-symbols-outlined text-[18px] text-[#795A70]">
                       expand_more
                     </span>
                   </span>
                 </summary>
-                <div className="border-t border-[#EADCE5]/80 px-4 py-3">
+                <div className="border-t border-[#DDF1E6] px-4 py-3">
                   {detail?.plan?.assessment ? (
                     <div className="space-y-2">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#B74783]">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#287D58]">
                         Assessment intake
                       </p>
                       <div className="flex justify-between">

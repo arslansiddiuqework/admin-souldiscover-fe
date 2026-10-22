@@ -36,6 +36,13 @@ export default function DashboardLayout({
     return () => window.removeEventListener("admin-auth-error", handleAuthError);
   }, [router]);
 
+  // Unauthenticated visitors must not see the admin shell or page data.
+  useEffect(() => {
+    if (!isCheckingAuth && !isAuthenticated) {
+      router.replace("/login");
+    }
+  }, [isCheckingAuth, isAuthenticated, router]);
+
   let isAllowed = true;
   if (!isCheckingAuth && isAuthenticated && adminUser) {
     const requiredPermission = routePermissions[pathname];
@@ -50,9 +57,10 @@ export default function DashboardLayout({
       <main className="relative z-10 flex-1 md:ml-[260px] min-w-0 flex flex-col">
         <Topbar />
         <div className="mx-auto w-full max-w-[1440px] p-4 pt-[84px] md:p-6 md:pt-[88px]">
-          {isCheckingAuth ? (
+          {isCheckingAuth || !isAuthenticated ? (
             <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3">
               <span className="h-9 w-9 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
+              {/* Stable copy avoids SSR/client hydration mismatch on auth gate. */}
               <span className="text-xs font-medium text-on-surface-variant">
                 Checking authorization...
               </span>

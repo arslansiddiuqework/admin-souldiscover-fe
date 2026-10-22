@@ -99,8 +99,9 @@ export default function ProfilePage() {
   const isAvatarBusy = isUploading || isDeletingAvatar;
 
   return (
-    <div className="page-shell mx-auto max-w-2xl">
+    <div className="page-shell mx-auto max-w-3xl">
       <PageHeader
+        tone="orchid"
         eyebrow="Account"
         title="Account Profile"
         description="Manage your admin account information and session access."
@@ -114,47 +115,54 @@ export default function ProfilePage() {
         }
       />
 
-      {/* Profile Card */}
-      <div className="panel">
-        <div className="panel-header">
-          <div className="flex items-center gap-2.5">
-            <div className="stat-icon !h-9 !w-9 !rounded-xl">
-              <span className="material-symbols-outlined text-[18px]">person</span>
-            </div>
-            <div>
-              <h2 className="text-sm font-semibold text-on-surface">Identity</h2>
-              <p className="text-[11px] text-on-surface-muted">Avatar, name, and role</p>
-            </div>
-          </div>
+      {/* Brand moment — the one place orchid leads */}
+      <div className="overflow-hidden rounded-[28px] border border-[#EBDDF3] bg-white shadow-lifted">
+        <div
+          className="relative h-32 sm:h-36"
+          style={{
+            background:
+              "radial-gradient(ellipse 60% 120% at 0% 0%, rgba(255,229,240,0.55), transparent 60%), radial-gradient(ellipse 50% 100% at 100% 100%, rgba(79,127,232,0.45), transparent 60%), linear-gradient(120deg, #B74783 0%, #9658B7 50%, #7863C6 100%)",
+          }}
+        >
+          <span
+            aria-hidden
+            className="absolute -right-6 -top-10 h-40 w-40 rounded-full border border-white/20"
+          />
+          <span
+            aria-hidden
+            className="absolute right-10 top-6 h-20 w-20 rounded-full border border-white/25"
+          />
+          <span className="absolute left-5 top-4 rounded-full bg-white/20 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white backdrop-blur">
+            Soul Discovery Admin
+          </span>
         </div>
 
-        <div className="space-y-6 p-5 sm:p-6">
-          {/* Identity Section */}
-          <div className="flex items-center gap-4">
+        <div className="relative px-5 pb-6 sm:px-8">
+          <div className="-mt-12 flex flex-col gap-4 sm:flex-row sm:items-end">
             <div className="relative flex-shrink-0">
               <div
                 onClick={handleAvatarClick}
-                className="group relative flex h-16 w-16 cursor-pointer select-none items-center justify-center overflow-hidden rounded-full border border-border bg-[#FFF0F6] text-lg font-semibold text-primary shadow-md transition-all hover:border-primary/50"
+                className="group relative flex h-24 w-24 cursor-pointer select-none items-center justify-center overflow-hidden rounded-[28px] border-4 border-white bg-[#FFE5F0] text-lg font-semibold text-[#B74783] shadow-lifted transition-all hover:scale-[1.02]"
                 title="Click to change profile picture"
               >
                 {adminUser?.profileImage ? (
                   <AvatarImage
                     src={adminUser.profileImage}
                     alt={adminUser.name}
-                    width={64}
-                    height={64}
+                    width={96}
+                    height={96}
                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                 ) : (
-                  <UserIcon className="h-7 w-7 text-on-surface-variant/70" />
+                  <UserIcon className="h-9 w-9 text-[#B74783]/70" />
                 )}
                 {isAvatarBusy ? (
                   <div className="absolute inset-0 flex items-center justify-center bg-scrim">
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
+                    <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                   </div>
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center bg-scrim opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                    <Camera className="h-4 w-4 text-primary-foreground" />
+                    <Camera className="h-5 w-5 text-white" />
                   </div>
                 )}
               </div>
@@ -163,7 +171,7 @@ export default function ProfilePage() {
                   type="button"
                   onClick={handleDeleteAvatar}
                   disabled={isAvatarBusy || isUpdatingProfile}
-                  className="absolute -bottom-1 -left-1 flex h-7 w-7 items-center justify-center rounded-full border border-surface bg-error text-error-foreground transition-colors hover:bg-error/90 disabled:pointer-events-none disabled:opacity-60"
+                  className="absolute -bottom-1 -left-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-error text-error-foreground transition-colors hover:bg-error/90 disabled:pointer-events-none disabled:opacity-60"
                   title="Delete profile picture"
                   aria-label="Delete profile picture"
                 >
@@ -184,7 +192,7 @@ export default function ProfilePage() {
               disabled={isAvatarBusy}
             />
 
-            <div className="flex-1">
+            <div className="flex-1 pb-1">
               {isEditing ? (
                 <div className="flex max-w-sm items-center gap-2">
                   <div className="field-shell flex-1">
@@ -192,7 +200,7 @@ export default function ProfilePage() {
                       type="text"
                       value={nameInput}
                       onChange={(e) => setNameInput(e.target.value)}
-                      className="field-input px-3 py-1.5 text-xs"
+                      className="field-input px-3 py-2 text-sm"
                       disabled={isUpdatingProfile}
                     />
                   </div>
@@ -200,10 +208,10 @@ export default function ProfilePage() {
                     type="button"
                     onClick={handleSaveName}
                     disabled={isUpdatingProfile}
-                    className="cursor-pointer rounded-xl bg-primary/10 p-2 text-primary transition-colors hover:bg-primary/20"
+                    className="cursor-pointer rounded-xl bg-[#EAF7EF] p-2 text-[#287D58] transition-colors hover:bg-[#D5F0E0]"
                     title="Save changes"
                   >
-                    <Check className="h-3.5 w-3.5" />
+                    <Check className="h-4 w-4" />
                   </button>
                   <button
                     type="button"
@@ -215,67 +223,75 @@ export default function ProfilePage() {
                     className="cursor-pointer rounded-xl bg-error/10 p-2 text-error transition-colors hover:bg-error/20"
                     title="Cancel editing"
                   >
-                    <X className="h-3.5 w-3.5" />
+                    <X className="h-4 w-4" />
                   </button>
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <h2 className="text-sm font-semibold text-on-surface">
+                  <h2 className="text-xl font-bold tracking-tight text-[#49263D]">
                     {adminUser?.name || "Admin User"}
                   </h2>
                   <button
                     type="button"
                     onClick={() => setIsEditing(true)}
-                    className="cursor-pointer rounded p-1 text-on-surface-variant transition-colors hover:bg-[#FFF0F6] hover:text-on-surface"
+                    className="cursor-pointer rounded-lg p-1.5 text-[#927C8B] transition-colors hover:bg-[#FFE5F0] hover:text-[#B74783]"
                     title="Edit name"
                   >
-                    <Edit2 className="h-3 w-3" />
+                    <Edit2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
               )}
-              <p className="mt-0.5 text-[11px] text-on-surface-muted">
+              <p className="mt-0.5 text-xs font-semibold text-[#B74783]">
                 {adminUser?.role || "Administrator"}
               </p>
             </div>
           </div>
 
-          {/* Account Info */}
-          <div className="grid grid-cols-1 gap-3 border-t border-border pt-5 sm:grid-cols-2">
-            <div className="rounded-2xl border border-border bg-[#FFF8FB]/80 p-4">
-              <p className="label-eyebrow">Email</p>
-              <p className="mt-1 text-xs font-medium text-on-surface">
+          {/* Account Info — multi-hue tiles */}
+          <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl border border-[#DCE7FF] bg-[#EEF4FF] p-4">
+              <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[#315FC2]">
+                <span className="material-symbols-outlined text-[14px]">mail</span>
+                Email
+              </p>
+              <p className="mt-1.5 break-all text-xs font-semibold text-[#49263D]">
                 {adminUser?.email || "Not available"}
               </p>
             </div>
 
-            <div className="rounded-2xl border border-border bg-[#FFF8FB]/80 p-4">
-              <p className="label-eyebrow">Role</p>
-              <p className="mt-1 text-xs font-medium text-on-surface">
+            <div className="rounded-2xl border border-[#E3DBF5] bg-[#F0EAFE] p-4">
+              <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[#5B3FA8]">
+                <span className="material-symbols-outlined text-[14px]">admin_panel_settings</span>
+                Role
+              </p>
+              <p className="mt-1.5 text-xs font-semibold text-[#49263D]">
                 {adminUser?.role || "Administrator"}
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-[#CFEBDC] bg-[#EAF7EF] p-4">
+              <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[#287D58]">
+                <span className="material-symbols-outlined text-[14px]">schedule</span>
+                Last login
+              </p>
+              <p className="mt-1.5 font-mono text-xs font-semibold text-[#49263D]">
+                {adminUser?.lastLogin || "Unknown"}
               </p>
             </div>
           </div>
 
           {/* Session Info */}
-          <div className="space-y-3 rounded-2xl border border-border bg-[#FFF8FB]/80 p-4">
-            <p className="label-eyebrow">Session Information</p>
-
-            <div className="flex justify-between text-[11px]">
-              <span className="text-on-surface-variant">Status</span>
+          <div className="mt-3 space-y-3 rounded-2xl border border-[#EBDDF3] bg-[#FDF8FC] p-4">
+            <p className="label-eyebrow !text-[#B74783]">Session Information</p>
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-[#795A70]">Status</span>
               <span className="badge badge-success text-[10px]">Active</span>
-            </div>
-
-            <div className="flex justify-between text-[11px]">
-              <span className="text-on-surface-variant">Last Login</span>
-              <span className="font-mono text-on-surface">
-                {adminUser?.lastLogin || "Unknown"}
-              </span>
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-between border-t border-border pt-5">
-            <p className="text-[10px] text-on-surface-muted">Manage your session securely</p>
+          <div className="mt-6 flex items-center justify-between border-t border-[#EBDDF3] pt-5">
+            <p className="text-[10px] text-[#927C8B]">Manage your session securely</p>
 
             <Button variant="danger" isLoading={isLoggingOut} onClick={handleSignOut}>
               Sign Out

@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/providers";
 import { useSearchParams } from "next/navigation";
 import { AvatarImage } from "@/components/ui/avatar-image";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { MetricTile } from "@/components/layout/ScreenHero";
 
 const greatVibes = Great_Vibes({
   weight: "400",
@@ -23,107 +25,40 @@ function hasActiveAlert(user: any) {
   return risk === "HIGH" || risk === "CRITICAL";
 }
 
-function Sparkline({
-  points,
-  color,
-}: {
-  points: number[];
-  color: string;
-}) {
-  const w = 72;
-  const h = 28;
-  const max = Math.max(...points, 1);
-  const min = Math.min(...points, 0);
-  const range = Math.max(max - min, 1);
-  const d = points
-    .map((p, i) => {
-      const x = (i / Math.max(points.length - 1, 1)) * w;
-      const y = h - ((p - min) / range) * (h - 4) - 2;
-      return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
-    })
-    .join(" ");
-
-  return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="overflow-visible">
-      <path
-        d={d}
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity={0.9}
-      />
-      <circle
-        cx={w}
-        cy={h - ((points[points.length - 1] - min) / range) * (h - 4) - 2}
-        r="2.5"
-        fill={color}
-      />
-    </svg>
-  );
-}
-
-function MetricCard({
-  label,
-  value,
-  hint,
-  icon,
-  iconBg,
-  iconColor,
-  sparkColor,
-  spark,
-}: {
-  label: string;
-  value: React.ReactNode;
-  hint: string;
-  icon: string;
-  iconBg: string;
-  iconColor: string;
-  sparkColor: string;
-  spark: number[];
-}) {
-  return (
-    <div className="rounded-[20px] border border-[#EADCE5]/80 bg-white p-3.5 shadow-[0_8px_24px_rgba(123,57,98,0.06)]">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <span
-            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${iconBg} ${iconColor}`}
-          >
-            <span className="material-symbols-outlined text-[16px]">{icon}</span>
-          </span>
-          <p className="truncate text-[10px] font-semibold uppercase tracking-[0.08em] text-[#927C8B]">
-            {label}
-          </p>
-        </div>
-      </div>
-      <div className="mt-2 flex items-end justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-2xl font-bold tracking-tight text-[#49263D]">{value}</p>
-          <p className="mt-0.5 text-[11px] text-[#795A70]">{hint}</p>
-        </div>
-        <Sparkline points={spark} color={sparkColor} />
-      </div>
-    </div>
-  );
-}
+/** Rotating full-palette avatar washes so the roster never reads monochrome. */
+const AVATAR_TONES = [
+  "bg-[#EEF4FF] text-[#4F7FE8]",
+  "bg-[#F0EAFE] text-[#7863C6]",
+  "bg-[#EAF7EF] text-[#287D58]",
+  "bg-[#FFF1E9] text-[#C46B4A]",
+  "bg-[#FFE5F0] text-[#B74783]",
+];
 
 function SnapshotPill({
   label,
   value,
   icon,
+  tone = "sky",
 }: {
   label: string;
   value: React.ReactNode;
   icon: string;
+  tone?: "sky" | "violet" | "mint" | "peach" | "orchid";
 }) {
+  const iconColor = {
+    sky: "text-[#4F7FE8]",
+    violet: "text-[#7863C6]",
+    mint: "text-[#287D58]",
+    peach: "text-[#C46B4A]",
+    orchid: "text-[#B74783]",
+  }[tone];
   return (
-    <div className="rounded-2xl border border-border bg-white/80 px-3 py-2.5">
-      <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-on-surface-muted">
-        <span className="material-symbols-outlined text-[14px] text-primary">{icon}</span>
+    <div className="rounded-2xl border border-[#DCE7FB] bg-white/90 px-3 py-2.5">
+      <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#927C8B]">
+        <span className={`material-symbols-outlined text-[14px] ${iconColor}`}>{icon}</span>
         {label}
       </div>
-      <p className="mt-1 text-sm font-bold text-on-surface">{value}</p>
+      <p className="mt-1 text-sm font-bold text-[#49263D]">{value}</p>
     </div>
   );
 }
@@ -139,11 +74,11 @@ function DrawerSection({
 }) {
   return (
     <div>
-      <h4 className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant/80">
-        <span className="material-symbols-outlined text-[14px] text-primary">{icon}</span>
+      <h4 className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#795A70]">
+        <span className="material-symbols-outlined text-[14px] text-[#4F7FE8]">{icon}</span>
         {title}
       </h4>
-      <div className="space-y-2 rounded-2xl border border-border bg-gradient-to-br from-white to-[#FFF8FB] p-4">
+      <div className="space-y-2 rounded-2xl border border-[#DCE7FB] bg-gradient-to-br from-white to-[#F5F8FF] p-4">
         {children}
       </div>
     </div>
@@ -254,132 +189,108 @@ export default function UsersPage() {
 
   return (
     <div className="page-shell !space-y-4">
-      {/* Hero banner — matches pastel directory mock */}
-      <section className="relative overflow-hidden rounded-[28px] border border-[#E4D4F0]/80 bg-gradient-to-r from-[#F3E8FF] via-[#F7EEFF] to-[#E8F0FE] shadow-[0_12px_40px_rgba(150,88,183,0.1)]">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage:
-              "radial-gradient(ellipse 50% 80% at 85% 40%, rgba(255,255,255,0.7), transparent 55%), radial-gradient(ellipse 40% 60% at 0% 100%, rgba(183,71,131,0.08), transparent 50%)",
-          }}
-        />
-        <div className="relative flex flex-col gap-6 p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between">
-          <div className="min-w-0 max-w-xl">
-            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#B74783]">
-              Directory
-            </p>
-            <h1 className="mt-1 text-3xl font-bold tracking-tight text-[#49263D] sm:text-[2rem]">
-              Users
-            </h1>
-            <p className="mt-2 text-sm leading-relaxed text-[#795A70]">
-              Member intelligence — status, emergency posture, and engagement
-              density across the Soul Discovery network.
-            </p>
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center rounded-full bg-[#FFE5F0] px-3 py-1 text-[11px] font-bold text-[#B74783] ring-1 ring-[#F0CADA]">
-                {pagination.total} total
+      {/* Sky directory hero */}
+      <PageHeader
+        tone="sky"
+        eyebrow="Directory"
+        title="Users"
+        description="Member intelligence — status, emergency posture, and engagement density across the Soul Discovery network."
+        meta={
+          <>
+            <span className="badge-sky">
+              <span className="material-symbols-outlined text-[13px]">groups</span>
+              {pagination.total} total
+            </span>
+            {pulse.alerts > 0 ? (
+              <span className="badge-error">
+                <span className="material-symbols-outlined text-[13px]">emergency</span>
+                {pulse.alerts} alerted
               </span>
-              {pulse.alerts > 0 ? (
-                <span className="inline-flex items-center rounded-full bg-[#FFF0F2] px-3 py-1 text-[11px] font-bold text-error ring-1 ring-error/20">
-                  {pulse.alerts} alerted
-                </span>
-              ) : (
-                <span className="inline-flex items-center rounded-full bg-[#E8F6EF] px-3 py-1 text-[11px] font-bold text-[#287D58] ring-1 ring-[#C6E8D6]">
-                  Stable page
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Decorative illustration */}
+            ) : (
+              <span className="badge-success">
+                <span className="material-symbols-outlined text-[13px]">verified_user</span>
+                Stable page
+              </span>
+            )}
+            <span className="badge-violet">{pulse.sessions} sessions on page</span>
+          </>
+        }
+        aside={
           <div className="relative mx-auto flex h-36 w-full max-w-[280px] shrink-0 items-center justify-center lg:mx-0 lg:h-40">
             <div
               aria-hidden
-              className="absolute h-24 w-24 rounded-full bg-[#D9B8F5]/50 blur-2xl"
+              className="absolute h-24 w-24 rounded-full bg-[#93C5FD]/50 blur-2xl"
             />
             <div
               aria-hidden
-              className="absolute right-6 top-2 h-10 w-10 rounded-full bg-[#B8D4FE]/70 blur-md"
+              className="absolute right-6 top-2 h-10 w-10 rounded-full bg-[#C4B5FD]/60 blur-md"
             />
             <div
               aria-hidden
-              className="absolute bottom-4 left-4 h-8 w-8 rounded-full bg-[#FFB8D9]/60 blur-md"
+              className="absolute bottom-4 left-4 h-8 w-8 rounded-full bg-[#86EFAC]/55 blur-md"
             />
-            <div className="relative flex h-28 w-28 items-center justify-center rounded-[28px] bg-gradient-to-br from-white to-[#F3E8FF] shadow-[0_16px_40px_rgba(150,88,183,0.2)] ring-1 ring-white/80">
-              <span className="material-symbols-outlined text-[52px] text-[#B74783]">
+            <div className="relative flex h-28 w-28 items-center justify-center rounded-[28px] bg-gradient-to-br from-white to-[#EEF4FF] shadow-[0_16px_40px_rgba(79,127,232,0.22)] ring-1 ring-white/80">
+              <span className="material-symbols-outlined text-[52px] text-[#4F7FE8]">
                 groups
               </span>
             </div>
             <p
-              className={`${greatVibes.className} absolute -bottom-1 right-0 rotate-[-6deg] text-[22px] leading-none text-[#9658B7] sm:text-[26px]`}
+              className={`${greatVibes.className} absolute -bottom-1 right-0 rotate-[-6deg] text-[22px] leading-none text-[#7863C6] sm:text-[26px]`}
             >
               Real People, Real Connections.
             </p>
           </div>
-        </div>
-      </section>
+        }
+      />
 
-      {/* Metric cards with sparklines */}
+      {/* Metric tiles — full palette */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
-        <MetricCard
+        <MetricTile
           label="Registered"
           value={pagination.total}
           hint="Registered accounts"
           icon="group"
-          iconBg="bg-[#FFE5F0]"
-          iconColor="text-[#B74783]"
-          sparkColor="#E879B0"
+          tone="sky"
           spark={sparks.total}
         />
-        <MetricCard
+        <MetricTile
           label="Active"
           value={pulse.active}
           hint="On this page"
           icon="verified_user"
-          iconBg="bg-[#E8F6EF]"
-          iconColor="text-[#287D58]"
-          sparkColor="#34B27B"
+          tone="mint"
           spark={sparks.active}
         />
-        <MetricCard
+        <MetricTile
           label="Suspended"
           value={pulse.suspended}
           hint="Access paused"
           icon="block"
-          iconBg="bg-[#FFF0F2]"
-          iconColor="text-error"
-          sparkColor="#E85A6A"
+          tone="alert"
           spark={sparks.suspended}
         />
-        <MetricCard
+        <MetricTile
           label="Risk flags"
           value={pulse.alerts}
           hint="HIGH / CRITICAL"
           icon="emergency"
-          iconBg="bg-[#E8F0FE]"
-          iconColor="text-[#4A7FD4]"
-          sparkColor="#5B8DEF"
+          tone="violet"
           spark={sparks.alerts}
         />
-        <MetricCard
+        <MetricTile
           label="Safety net"
           value={pulse.withContacts}
           hint="Contacts configured"
           icon="contact_emergency"
-          iconBg="bg-[#E8F0FE]"
-          iconColor="text-[#4A7FD4]"
-          sparkColor="#6B9AF0"
+          tone="peach"
           spark={sparks.contacts}
         />
-        <MetricCard
+        <MetricTile
           label="Sessions"
           value={pulse.sessions}
           hint="On this page"
           icon="forum"
-          iconBg="bg-[#FFE5F0]"
-          iconColor="text-[#B74783]"
-          sparkColor="#E879B0"
+          tone="orchid"
           spark={sparks.sessions}
         />
       </div>
@@ -388,7 +299,7 @@ export default function UsersPage() {
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
         <div className="flex flex-1 flex-col gap-3 sm:flex-row">
           <div className="field-shell flex-1">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-lg text-on-surface-variant/80">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-lg text-[#4F7FE8]">
               search
             </span>
             <input
@@ -408,15 +319,15 @@ export default function UsersPage() {
               setStatus(e.target.value);
               setPage(1);
             }}
-            className="field-select rounded-full text-xs"
+            className="field-select rounded-full text-xs sm:max-w-[200px]"
           >
             <option value="all">All statuses</option>
             <option value="active">Active</option>
             <option value="suspended">Suspended</option>
           </select>
         </div>
-        <div className="flex items-center gap-2 rounded-full border border-[#EADCE5] bg-white px-4 py-2.5 shadow-[0_4px_14px_rgba(123,57,98,0.05)]">
-          <span className="material-symbols-outlined text-[18px] text-primary">
+        <div className="flex items-center gap-2 rounded-full border border-[#DCE7FB] bg-white px-4 py-2.5 shadow-[0_4px_14px_rgba(79,127,232,0.08)]">
+          <span className="material-symbols-outlined text-[18px] text-[#4F7FE8]">
             filter_alt
           </span>
           <div>
@@ -431,10 +342,14 @@ export default function UsersPage() {
       </div>
 
       {/* Member roster */}
-      <div className="overflow-hidden rounded-[24px] border border-[#EADCE5]/90 bg-white shadow-[0_10px_32px_rgba(123,57,98,0.06)]">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#EADCE5]/80 bg-gradient-to-r from-[#FFF8FB] via-white to-[#F8F0FF] px-5 py-4 sm:px-6">
+      <div className="panel !border-[#DCE7FB] shadow-[0_10px_32px_rgba(79,127,232,0.08)]">
+        <div className="relative flex flex-wrap items-center justify-between gap-3 border-b border-[#DCE7FB] bg-gradient-to-r from-[#EEF4FF] via-white to-[#F5F0FF] px-5 py-4 sm:px-6">
+          <span
+            aria-hidden
+            className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-[#4F7FE8] via-[#7863C6] to-[#287D58]"
+          />
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#FFE5F0] text-primary">
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#4F7FE8] text-white shadow-[0_8px_18px_rgba(79,127,232,0.3)]">
               <span className="material-symbols-outlined text-[20px]">badge</span>
             </span>
             <div>
@@ -444,13 +359,13 @@ export default function UsersPage() {
               </p>
             </div>
           </div>
-          <span className="badge badge-neutral">{pagination.total} accounts</span>
+          <span className="badge-sky">{pagination.total} accounts</span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[880px] text-left">
             <thead>
-              <tr className="border-b border-[#EADCE5]/80 text-[10px] font-bold uppercase tracking-[0.1em] text-[#927C8B]">
+              <tr className="border-b border-[#DCE7FB] bg-[#F5F8FF] text-[10px] font-bold uppercase tracking-[0.1em] text-[#4F7FE8]">
                 <th className="px-6 py-3">Member</th>
                 <th className="px-6 py-3">Status</th>
                 <th className="px-6 py-3">Emergency</th>
@@ -459,12 +374,12 @@ export default function UsersPage() {
                 <th className="px-6 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#F0E8ED]">
+            <tbody className="divide-y divide-[#EEF2FB]">
               {isLoading ? (
                 [...Array(5)].map((_, i) => (
                   <tr key={i}>
                     <td colSpan={6} className="px-6 py-4">
-                      <div className="h-14 animate-pulse rounded-2xl bg-[#FFF0F6]/70" />
+                      <div className="h-14 animate-pulse rounded-2xl bg-[#EEF4FF]" />
                     </td>
                   </tr>
                 ))
@@ -472,7 +387,7 @@ export default function UsersPage() {
                 <tr>
                   <td colSpan={6}>
                     <div className="empty-state">
-                      <div className="empty-state-icon">
+                      <div className="empty-state-icon !bg-[#EEF4FF] !text-[#4F7FE8]">
                         <span className="material-symbols-outlined text-[28px]">
                           group_off
                         </span>
@@ -490,25 +405,19 @@ export default function UsersPage() {
                 users.map((user: any) => {
                   const alerted = hasActiveAlert(user);
                   const sessions = user.sessionCount || 0;
-                  const avatarColors = [
-                    "bg-[#FFE5F0] text-[#B74783]",
-                    "bg-[#E8F0FE] text-[#4A7FD4]",
-                    "bg-[#F3EBFF] text-[#9658B7]",
-                    "bg-[#E8F6EF] text-[#287D58]",
-                  ];
                   const colorIdx =
-                    (user.name?.charCodeAt(0) || 0) % avatarColors.length;
+                    (user.name?.charCodeAt(0) || 0) % AVATAR_TONES.length;
                   return (
                     <tr
                       key={user._id}
-                      className="group cursor-pointer transition-colors hover:bg-[#FFF8FB]"
+                      className="group cursor-pointer transition-colors hover:bg-[#F5F8FF]"
                       onClick={() => openUser(user)}
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="relative">
                             <div
-                              className={`flex h-11 w-11 flex-shrink-0 items-center justify-center overflow-hidden rounded-full text-sm font-semibold ring-2 ring-white shadow-sm ${avatarColors[colorIdx]}`}
+                              className={`flex h-11 w-11 flex-shrink-0 items-center justify-center overflow-hidden rounded-full text-sm font-semibold ring-2 ring-white shadow-sm ${AVATAR_TONES[colorIdx]}`}
                             >
                               {user.profileImage ? (
                                 <AvatarImage
@@ -527,7 +436,7 @@ export default function UsersPage() {
                             ) : null}
                           </div>
                           <div className="min-w-0">
-                            <div className="truncate text-xs font-semibold text-[#49263D] transition-colors group-hover:text-primary">
+                            <div className="truncate text-xs font-semibold text-[#49263D] transition-colors group-hover:text-[#4F7FE8]">
                               {user.name}
                             </div>
                             <div className="truncate text-[10px] text-[#927C8B]">
@@ -538,12 +447,12 @@ export default function UsersPage() {
                       </td>
                       <td className="px-6 py-4">
                         {user.status === "suspended" ? (
-                          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FFF0F2] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-error ring-1 ring-error/15">
+                          <span className="badge-error !px-2.5 !py-1 !text-[10px] uppercase tracking-wider">
                             <span className="h-1.5 w-1.5 rounded-full bg-error" />
                             suspended
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E8F6EF] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#287D58] ring-1 ring-[#C6E8D6]">
+                          <span className="badge-success !px-2.5 !py-1 !text-[10px] uppercase tracking-wider">
                             <span className="h-1.5 w-1.5 rounded-full bg-[#34B27B]" />
                             active
                           </span>
@@ -551,12 +460,12 @@ export default function UsersPage() {
                       </td>
                       <td className="px-6 py-4">
                         {alerted ? (
-                          <span className="badge badge-error animate-pulse text-[10px] uppercase tracking-wider">
+                          <span className="badge-error animate-pulse !text-[10px] uppercase tracking-wider">
                             {user.lastEscalation.riskLevel}
                           </span>
                         ) : user.hasEmergencyContacts ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#287D58]">
-                            <span className="material-symbols-outlined text-[14px]">
+                          <span className="badge-peach !text-[10px]">
+                            <span className="material-symbols-outlined text-[13px]">
                               verified
                             </span>
                             Contacts set
@@ -567,9 +476,9 @@ export default function UsersPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[#F1E9EF]">
+                          <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[#E6EEFD]">
                             <div
-                              className="h-full rounded-full bg-gradient-to-r from-[#9F376F] to-[#D9B8F5]"
+                              className="h-full rounded-full bg-gradient-to-r from-[#4F7FE8] to-[#7863C6]"
                               style={{
                                 width: `${Math.min(100, Math.max(8, sessions * 12))}%`,
                               }}
@@ -590,7 +499,7 @@ export default function UsersPage() {
                         <div className="flex justify-end gap-1.5">
                           <button
                             onClick={() => openUser(user)}
-                            className="flex h-8 w-8 items-center justify-center rounded-full border border-[#EADCE5] bg-white text-[#795A70] transition hover:border-primary/30 hover:bg-[#FFF0F6] hover:text-primary"
+                            className="flex h-8 w-8 items-center justify-center rounded-full border border-[#DCE7FB] bg-white text-[#795A70] transition hover:border-[#4F7FE8]/40 hover:bg-[#EEF4FF] hover:text-[#4F7FE8]"
                             title="View Details"
                           >
                             <span className="material-symbols-outlined text-[16px]">
@@ -603,7 +512,7 @@ export default function UsersPage() {
                                 e.stopPropagation();
                                 setUserToDelete(user);
                               }}
-                              className="flex h-8 w-8 items-center justify-center rounded-full border border-[#EADCE5] bg-white text-[#795A70] transition hover:border-error/40 hover:bg-error/10 hover:text-error"
+                              className="flex h-8 w-8 items-center justify-center rounded-full border border-[#DCE7FB] bg-white text-[#795A70] transition hover:border-error/40 hover:bg-error/10 hover:text-error"
                               title="Delete User"
                             >
                               <span className="material-symbols-outlined text-[16px]">
@@ -613,7 +522,7 @@ export default function UsersPage() {
                           ) : (
                             <button
                               type="button"
-                              className="flex h-8 w-8 items-center justify-center rounded-full border border-[#EADCE5] bg-white text-[#795A70]"
+                              className="flex h-8 w-8 items-center justify-center rounded-full border border-[#DCE7FB] bg-white text-[#795A70]"
                               title="More"
                               onClick={() => openUser(user)}
                             >
@@ -632,7 +541,7 @@ export default function UsersPage() {
           </table>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#EADCE5]/80 px-5 py-3.5 text-xs sm:px-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#DCE7FB] bg-[#F5F8FF]/70 px-5 py-3.5 text-xs sm:px-6">
           <span className="text-[#795A70]">
             Page {pagination.page} of {pagination.totalPages} ({pagination.total}{" "}
             total)
@@ -640,7 +549,7 @@ export default function UsersPage() {
           <div className="flex gap-2">
             <button
               type="button"
-              className="rounded-full border border-[#EADCE5] bg-white px-4 py-1.5 font-semibold text-[#49263D] transition hover:bg-[#FFF8FB] disabled:opacity-40"
+              className="soft-btn"
               disabled={page <= 1}
               onClick={() => setPage((p) => p - 1)}
             >
@@ -648,7 +557,7 @@ export default function UsersPage() {
             </button>
             <button
               type="button"
-              className="rounded-full border border-[#EADCE5] bg-white px-4 py-1.5 font-semibold text-[#49263D] transition hover:bg-[#FFF8FB] disabled:opacity-40"
+              className="soft-btn-sky"
               disabled={page >= pagination.totalPages}
               onClick={() => setPage((p) => p + 1)}
             >
@@ -666,7 +575,7 @@ export default function UsersPage() {
         }}
         title={
           <div className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-container font-bold text-sm text-primary ring-1 ring-border">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#EEF4FF] text-sm font-bold text-[#4F7FE8] ring-1 ring-[#DCE7FB]">
               {selectedUser?.profileImage ? (
                 <AvatarImage
                   src={selectedUser.profileImage}
@@ -687,21 +596,21 @@ export default function UsersPage() {
         <div className="space-y-5 font-sans text-xs text-on-surface">
           {detailLoading && (
             <div className="space-y-3">
-              <div className="h-24 animate-pulse rounded-2xl bg-[#FFF0F6]" />
+              <div className="h-24 animate-pulse rounded-2xl bg-[#EEF4FF]" />
               <div className="grid grid-cols-2 gap-2">
                 {[...Array(4)].map((_, i) => (
-                  <div key={i} className="h-14 animate-pulse rounded-2xl bg-[#FFF0F6]" />
+                  <div key={i} className="h-14 animate-pulse rounded-2xl bg-[#EEF4FF]" />
                 ))}
               </div>
             </div>
           )}
 
-          <div className="relative overflow-hidden rounded-[22px] border border-border bg-white p-4 shadow-card">
+          <div className="relative overflow-hidden rounded-[22px] border border-[#DCE7FB] bg-white p-4 shadow-card">
             <div
               className="pointer-events-none absolute inset-0"
               style={{
                 backgroundImage:
-                  "radial-gradient(ellipse 80% 70% at 0% 0%, rgba(255,229,240,0.9), transparent 55%)",
+                  "radial-gradient(ellipse 80% 70% at 0% 0%, rgba(238,244,255,0.95), transparent 55%), radial-gradient(ellipse 50% 50% at 100% 100%, rgba(240,234,254,0.6), transparent 60%)",
               }}
             />
             <div className="relative space-y-3">
@@ -737,7 +646,7 @@ export default function UsersPage() {
                   className={`field-select min-w-[7rem] w-auto py-1 text-[10px] font-semibold uppercase tracking-wider ${
                     (selectedUser?.status || "active") === "suspended"
                       ? "border-error/30 text-error"
-                      : "border-primary/30 text-primary"
+                      : "border-[#287D58]/30 text-[#287D58]"
                   }`}
                 >
                   <option value="active">Active</option>
@@ -746,7 +655,7 @@ export default function UsersPage() {
               </div>
               <div className="flex items-center justify-between gap-2">
                 <span className="text-on-surface-variant/80">AI Companion</span>
-                <span className="font-semibold">
+                <span className="font-semibold text-[#7863C6]">
                   {userDetail?.user?.aiName || selectedUser?.aiName || "Maya"} ·{" "}
                   {userDetail?.user?.aiBehavior ||
                     selectedUser?.aiBehavior ||
@@ -769,8 +678,8 @@ export default function UsersPage() {
           </div>
 
           <div>
-            <h4 className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant/80">
-              <span className="material-symbols-outlined text-[14px] text-primary">
+            <h4 className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#795A70]">
+              <span className="material-symbols-outlined text-[14px] text-[#4F7FE8]">
                 monitoring
               </span>
               Activity Snapshot
@@ -779,6 +688,7 @@ export default function UsersPage() {
               <SnapshotPill
                 label="Registered"
                 icon="calendar_month"
+                tone="sky"
                 value={
                   selectedUser?.createdAt
                     ? new Date(selectedUser.createdAt).toLocaleDateString()
@@ -788,16 +698,19 @@ export default function UsersPage() {
               <SnapshotPill
                 label="Sessions"
                 icon="forum"
+                tone="violet"
                 value={selectedUser?.sessionCount || userDetail?.sessions?.length || 0}
               />
               <SnapshotPill
                 label="Mood entries"
                 icon="sentiment_satisfied"
+                tone="peach"
                 value={userDetail?.mood?.totalEntries ?? "—"}
               />
               <SnapshotPill
                 label="Weekly mood"
                 icon="trending_up"
+                tone="mint"
                 value={
                   userDetail?.mood ? `${userDetail.mood.weeklyAvgScore}/100` : "—"
                 }
@@ -805,21 +718,25 @@ export default function UsersPage() {
               <SnapshotPill
                 label="Activities"
                 icon="self_improvement"
+                tone="mint"
                 value={userDetail?.activity?.totalEntries ?? "—"}
               />
               <SnapshotPill
                 label="Wellness"
                 icon="spa"
+                tone="orchid"
                 value={userDetail?.wellnessPlans?.length ?? "—"}
               />
               <SnapshotPill
                 label="Consults"
                 icon="event"
+                tone="sky"
                 value={userDetail?.consultations?.length ?? "—"}
               />
               <SnapshotPill
                 label="Assessments"
                 icon="quiz"
+                tone="violet"
                 value={userDetail?.assessments?.totalCompletions ?? "—"}
               />
             </div>
@@ -948,7 +865,7 @@ export default function UsersPage() {
           )}
 
           {adminUser?.role === "superAdmin" && (
-            <div className="flex gap-2 border-t border-border pt-4">
+            <div className="flex gap-2 border-t border-[#DCE7FB] pt-4">
               <Button
                 variant="danger"
                 className="flex-1"

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { authService } from "@/services/authService";
 import type { AdminProfile } from "@/types";
@@ -5,11 +6,32 @@ import type { AdminProfile } from "@/types";
 export function useAuth() {
   const queryClient = useQueryClient();
 
-  const { data: authData, isLoading: isCheckingAuth, error } = useQuery({
+  // localStorage is unavailable during SSR. Defer reading the token until after
+  // mount so the first client paint matches the server HTML (no hydration toast).
+  const [sessionReady, setSessionReady] = useState(false);
+
+  useEffect(() => {
+    setSessionReady(true);
+  }, []);
+
+  const hasToken =
+    sessionReady &&
+    typeof window !== "undefined" &&
+    Boolean(localStorage.getItem("adminAccessToken"));
+
+  const { data: authData, isLoading: isAuthQueryLoading, isFetched } = useQuery({
     queryKey: ["adminMe"],
-    queryFn: () => authService.me().catch(() => ({ authenticated: false, admin: null })),
+    queryFn: () =>
+      authService.me().catch(() => ({ authenticated: false, admin: null })),
     retry: false,
+    // Avoid a guaranteed 401 round-trip when there is no session.
+    enabled: hasToken,
   });
+
+  // Before sessionReady: treat as checking (SSR + first client paint).
+  // With a token: wait until /me settles.
+  const isCheckingAuth =
+    !sessionReady || (hasToken && (isAuthQueryLoading || !isFetched));
 
   const loginMutation = useMutation({
     mutationFn: authService.login,

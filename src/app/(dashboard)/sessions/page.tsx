@@ -10,7 +10,18 @@ import { useSearchParams } from "next/navigation";
 import { AvatarImage } from "@/components/ui/avatar-image";
 import { PageHeader } from "@/components/layout/PageHeader";
 
-function HeroStat({
+type ConsoleAccent = "orchid" | "sky" | "mint" | "peach" | "alert";
+
+const ACCENT_STYLES: Record<ConsoleAccent, { well: string; bar: string }> = {
+  orchid: { well: "bg-[#FFE5F0] text-[#B74783]", bar: "from-[#C45A92] to-[#B74783]" },
+  sky: { well: "bg-[#EEF4FF] text-[#4F7FE8]", bar: "from-[#4F7FE8] to-[#93B4F5]" },
+  mint: { well: "bg-[#EAF7EF] text-[#287D58]", bar: "from-[#287D58] to-[#7CCBA3]" },
+  peach: { well: "bg-[#FFF1E9] text-[#C46B4A]", bar: "from-[#C46B4A] to-[#EBAE92]" },
+  alert: { well: "bg-[#FFF0F2] text-[#B4233D]", bar: "from-[#B4233D] to-[#F08596]" },
+};
+
+/** Soft metric cell for the care pulse strip. */
+function ConsoleStat({
   label,
   value,
   hint,
@@ -21,37 +32,57 @@ function HeroStat({
   value: React.ReactNode;
   hint?: string;
   icon: string;
-  accent?: "orchid" | "lavender" | "success" | "danger";
+  accent?: ConsoleAccent;
 }) {
-  const accentCls =
-    accent === "success"
-      ? "bg-[#E8F6EF] text-[#287D58]"
-      : accent === "danger"
-        ? "bg-[#FFF0F2] text-error"
-        : accent === "lavender"
-          ? "bg-[#F3EBFF] text-[#9658B7]"
-          : "bg-[#FFE5F0] text-primary";
-
   return (
-    <div className="rounded-2xl border border-white/50 bg-white/55 px-3.5 py-3 backdrop-blur-sm">
+    <div className="rounded-2xl border border-[#EADCE5]/90 bg-white/80 px-3.5 py-3 backdrop-blur-sm">
       <div className="flex items-center gap-2">
-        <span className={`flex h-8 w-8 items-center justify-center rounded-xl ${accentCls}`}>
+        <span
+          className={`flex h-8 w-8 items-center justify-center rounded-xl ${ACCENT_STYLES[accent].well}`}
+        >
           <span className="material-symbols-outlined text-[16px]">{icon}</span>
         </span>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-on-surface-muted">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[#927C8B]">
           {label}
         </p>
       </div>
-      <p className="mt-2 text-xl font-bold tracking-tight text-on-surface">{value}</p>
-      {hint ? <p className="mt-0.5 text-[11px] text-on-surface-variant">{hint}</p> : null}
+      <p className="mt-2 text-xl font-bold tracking-tight text-[#49263D] tabular-nums">
+        {value}
+      </p>
+      {hint ? <p className="mt-0.5 text-[11px] text-[#795A70]">{hint}</p> : null}
+    </div>
+  );
+}
+
+function DrawerStat({
+  label,
+  value,
+  tone = "orchid",
+}: {
+  label: string;
+  value: React.ReactNode;
+  tone?: "orchid" | "sky" | "mint" | "alert";
+}) {
+  const color = {
+    orchid: "text-[#B74783]",
+    sky: "text-[#4F7FE8]",
+    mint: "text-[#287D58]",
+    alert: "text-[#B4233D]",
+  }[tone];
+  return (
+    <div className="rounded-2xl border border-[#EADCE5] bg-gradient-to-br from-white to-[#FFF8FB] px-3 py-2.5">
+      <p className="text-[9px] font-semibold uppercase tracking-wider text-[#927C8B]">
+        {label}
+      </p>
+      <p className={`mt-0.5 font-mono text-lg font-bold ${color}`}>{value}</p>
     </div>
   );
 }
 
 function statusBadge(status?: string) {
   if (status === "active") return "badge-primary";
-  if (status === "completed") return "badge-neutral";
-  return "badge-warning";
+  if (status === "completed") return "badge-success";
+  return "badge-peach";
 }
 
 export default function SessionsPage() {
@@ -158,77 +189,116 @@ export default function SessionsPage() {
 
   return (
     <div className="page-shell !space-y-4">
+      {/* Orchid care sessions */}
       <PageHeader
-        eyebrow="Clinical"
+        tone="orchid"
+        eyebrow="Care sessions"
         title="Sessions"
         description="Therapy session console — browse members, open histories, and inspect high-risk transcripts securely."
         meta={
           <>
-            <span className="badge badge-primary">{pagination.total} members</span>
-            <span className="badge badge-neutral">
-              {pulse.totalSessions} sessions on page
+            <span className="badge-primary">
+              <span className="material-symbols-outlined text-[13px]">groups</span>
+              {pagination.total} members
             </span>
+            <span className="badge-sky">{pulse.totalSessions} sessions on page</span>
+            {pulse.suspended > 0 ? (
+              <span className="badge-peach">{pulse.suspended} suspended</span>
+            ) : (
+              <span className="badge-success">All accounts good</span>
+            )}
           </>
+        }
+        aside={
+          <div className="relative mx-auto hidden h-28 w-32 shrink-0 items-center justify-center lg:flex">
+            <div
+              aria-hidden
+              className="absolute inset-0 rounded-[28px] bg-[#F9A8D4]/60 blur-2xl"
+            />
+            <div className="relative flex h-24 w-24 items-center justify-center rounded-[26px] bg-gradient-to-br from-[#B74783] to-[#9F376F] text-white shadow-[0_16px_36px_rgba(183,71,131,0.35)] ring-1 ring-white/50">
+              <span className="material-symbols-outlined text-[44px]">psychology</span>
+            </div>
+            <span className="absolute -right-1 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white text-[#4F7FE8] shadow-lifted ring-1 ring-[#DCE7FB]">
+              <span className="material-symbols-outlined text-[15px]">forum</span>
+            </span>
+            <span className="absolute -left-1 bottom-3 flex h-7 w-7 items-center justify-center rounded-full bg-white text-[#287D58] shadow-lifted ring-1 ring-[#C6E8D6]">
+              <span className="material-symbols-outlined text-[15px]">lock</span>
+            </span>
+          </div>
         }
       />
 
-      {/* Hero pulse */}
-      <div className="relative overflow-hidden rounded-[28px] border border-border bg-white/90 shadow-card">
+      {/* Care pulse strip */}
+      <div className="relative overflow-hidden rounded-[26px] border border-[#EADCE5] bg-white shadow-[0_12px_36px_rgba(183,71,131,0.08)]">
         <div
+          aria-hidden
           className="pointer-events-none absolute inset-0"
           style={{
             backgroundImage:
-              "radial-gradient(ellipse 70% 80% at 0% 0%, rgba(255,229,240,0.95), transparent 55%), radial-gradient(ellipse 55% 60% at 100% 0%, rgba(217,184,245,0.35), transparent 50%), radial-gradient(ellipse 40% 50% at 50% 100%, rgba(255,240,246,0.65), transparent 45%)",
+              "radial-gradient(ellipse 70% 80% at 0% 0%, rgba(255,229,240,0.95), transparent 55%), radial-gradient(ellipse 50% 60% at 100% 0%, rgba(255,241,233,0.55), transparent 50%)",
           }}
         />
+        <div className="relative flex items-center gap-2 border-b border-[#EADCE5]/80 px-4 py-2.5">
+          <span className="flex gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-[#B74783]" />
+            <span className="h-2 w-2 rounded-full bg-[#C46B4A]" />
+            <span className="h-2 w-2 rounded-full bg-[#287D58]" />
+          </span>
+          <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#B74783]">
+            care pulse · this page
+          </span>
+        </div>
         <div className="relative grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 lg:grid-cols-6">
-          <HeroStat
+          <ConsoleStat
             label="Members"
             value={pagination.total}
             hint="In directory"
             icon="groups"
+            accent="orchid"
           />
-          <HeroStat
+          <ConsoleStat
             label="Sessions"
             value={pulse.totalSessions}
             hint="On this page"
             icon="forum"
+            accent="sky"
           />
-          <HeroStat
+          <ConsoleStat
             label="Engaged"
             value={pulse.withSessions}
             hint="Have ≥1 session"
             icon="psychology"
-            accent="lavender"
+            accent="orchid"
           />
-          <HeroStat
+          <ConsoleStat
             label="Avg / member"
             value={pulse.avg}
             hint="Page average"
             icon="analytics"
+            accent="peach"
           />
-          <HeroStat
+          <ConsoleStat
             label="Active"
             value={pulse.activeUsers}
             hint="Account status"
             icon="verified_user"
-            accent="success"
+            accent="mint"
           />
-          <HeroStat
+          <ConsoleStat
             label="Peak"
             value={pulse.maxOnPage}
             hint="Most sessions"
             icon="bolt"
-            accent={pulse.suspended > 0 ? "danger" : "orchid"}
+            accent={pulse.suspended > 0 ? "alert" : "sky"}
           />
         </div>
       </div>
 
       {/* Filters */}
       <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch">
-        <div className="filter-bar flex-1 !mb-0">
+        <div className="filter-bar flex-1 !mb-0 !border-[#EADCE5]">
           <div className="field-shell">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-lg text-on-surface-variant/80">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-lg text-[#B74783]">
               search
             </span>
             <input
@@ -256,15 +326,15 @@ export default function SessionsPage() {
             <option value="suspended">Suspended Users</option>
           </select>
         </div>
-        <div className="flex items-center gap-2 rounded-[22px] border border-border bg-white/80 px-4 py-2 shadow-card">
-          <span className="material-symbols-outlined text-[18px] text-primary">
+        <div className="flex items-center gap-2 rounded-[22px] border border-[#EADCE5] bg-white/90 px-4 py-2 shadow-card">
+          <span className="material-symbols-outlined text-[18px] text-[#B74783]">
             grid_view
           </span>
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-on-surface-muted">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#927C8B]">
               Showing
             </p>
-            <p className="text-xs font-bold text-on-surface">
+            <p className="text-xs font-bold text-[#49263D]">
               {users.length} of {pagination.total}
             </p>
           </div>
@@ -277,7 +347,7 @@ export default function SessionsPage() {
           {[...Array(8)].map((_, idx) => (
             <div
               key={idx}
-              className="h-56 animate-pulse rounded-[22px] border border-border bg-white/70"
+              className="h-56 animate-pulse rounded-[22px] border border-[#EADCE5] bg-[#FFF8FB]"
             />
           ))}
         </div>
@@ -304,20 +374,24 @@ export default function SessionsPage() {
             return (
               <div
                 key={user._id}
-                className="group relative flex cursor-pointer flex-col justify-between overflow-hidden rounded-[22px] border border-border bg-white/90 p-5 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-card-hover"
+                className="group relative flex cursor-pointer flex-col justify-between overflow-hidden rounded-[22px] border border-[#EADCE5] bg-white p-5 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-[#B74783]/40 hover:shadow-[0_16px_36px_rgba(183,71,131,0.16)]"
                 onClick={() => handleSelectUser(user)}
               >
+                <span
+                  aria-hidden
+                  className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-[#B74783] via-[#C46B4A] to-[#287D58] opacity-70"
+                />
                 <div
-                  className="pointer-events-none absolute inset-0 opacity-90"
+                  className="pointer-events-none absolute inset-0"
                   style={{
                     backgroundImage:
-                      "radial-gradient(ellipse 80% 70% at 0% 0%, rgba(255,229,240,0.95), transparent 55%), radial-gradient(ellipse 60% 50% at 100% 0%, rgba(241,234,255,0.7), transparent 50%)",
+                      "radial-gradient(ellipse 80% 70% at 0% 0%, rgba(255,229,240,0.95), transparent 55%), radial-gradient(ellipse 60% 50% at 100% 0%, rgba(255,241,233,0.65), transparent 50%)",
                   }}
                 />
                 <div className="relative">
                   <div className="mb-4 flex items-start justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-primary-container text-lg font-bold text-primary ring-1 ring-border transition-colors group-hover:ring-primary/40">
+                      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#FFE5F0] text-lg font-bold text-[#B74783] ring-1 ring-[#EADCE5] transition-colors group-hover:ring-[#B74783]/50">
                         {user.profileImage ? (
                           <AvatarImage
                             src={user.profileImage}
@@ -331,7 +405,7 @@ export default function SessionsPage() {
                         )}
                       </div>
                       <div className="min-w-0 overflow-hidden">
-                        <h3 className="line-clamp-1 text-sm font-semibold text-on-surface transition-colors group-hover:text-primary">
+                        <h3 className="line-clamp-1 text-sm font-semibold text-[#49263D] transition-colors group-hover:text-[#B74783]">
                           {user.name || "Unknown User"}
                         </h3>
                         <p className="mt-0.5 line-clamp-1 font-mono text-[10px] text-on-surface-variant/75">
@@ -340,7 +414,7 @@ export default function SessionsPage() {
                       </div>
                     </div>
                     <span
-                      className={`badge shrink-0 text-[9px] uppercase tracking-wider ${
+                      className={`shrink-0 text-[9px] uppercase tracking-wider ${
                         user.status === "suspended" ? "badge-error" : "badge-success"
                       }`}
                     >
@@ -348,27 +422,27 @@ export default function SessionsPage() {
                     </span>
                   </div>
 
-                  <div className="mb-4 rounded-2xl border border-border bg-white/75 p-3.5 backdrop-blur-sm">
+                  <div className="mb-4 rounded-2xl border border-[#EADCE5] bg-white/80 p-3.5 backdrop-blur-sm">
                     <div className="mb-2 flex items-end justify-between">
                       <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant/70">
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-[#927C8B]">
                           Sessions
                         </p>
-                        <p className="mt-0.5 text-2xl font-bold tracking-tight text-on-surface">
+                        <p className="mt-0.5 font-mono text-2xl font-bold tracking-tight text-[#49263D] tabular-nums">
                           {sessions}
                         </p>
                       </div>
-                      <span className="material-symbols-outlined text-[22px] text-primary/70">
-                        forum
+                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#FFE5F0] text-[#B74783]">
+                        <span className="material-symbols-outlined text-[20px]">forum</span>
                       </span>
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-[#F1E9EF]">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-[#9F376F] via-[#B74783] to-[#D9B8F5] transition-all duration-500"
+                        className={`h-full rounded-full bg-gradient-to-r ${ACCENT_STYLES.orchid.bar} transition-all duration-500`}
                         style={{ width: `${barPct}%` }}
                       />
                     </div>
-                    <p className="mt-1.5 text-[10px] text-on-surface-muted">
+                    <p className="mt-1.5 text-[10px] text-[#927C8B]">
                       Relative volume on this page
                     </p>
                   </div>
@@ -376,7 +450,7 @@ export default function SessionsPage() {
 
                 <button
                   type="button"
-                  className="relative soft-btn w-full group-hover:border-primary/30 group-hover:bg-[#FFF0F6] group-hover:text-primary"
+                  className="soft-btn relative w-full !border-[#EADCE5] group-hover:!border-[#B74783]/40 group-hover:!bg-[#FFE5F0] group-hover:!text-[#9F376F]"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleSelectUser(user);
@@ -395,7 +469,7 @@ export default function SessionsPage() {
       )}
 
       {!isLoading && users.length > 0 && (
-        <div className="panel">
+        <div className="panel !border-[#EADCE5]">
           <div className="pagination-bar text-xs !border-t-0">
             <span className="text-on-surface-variant/80">
               Page {pagination.page} of {pagination.totalPages} ({pagination.total}{" "}
@@ -412,7 +486,7 @@ export default function SessionsPage() {
               </button>
               <button
                 type="button"
-                className="soft-btn"
+                className="soft-btn-primary"
                 disabled={page >= pagination.totalPages}
                 onClick={() => setPage((p) => p + 1)}
               >
@@ -429,7 +503,7 @@ export default function SessionsPage() {
         onClose={() => setSelectedUserForSessions(null)}
         title={
           <div className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-primary-container font-bold text-sm text-primary ring-1 ring-border">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#FFE5F0] text-sm font-bold text-[#B74783] ring-1 ring-[#EADCE5]">
               {selectedUserForSessions?.profileImage ? (
                 <AvatarImage
                   src={selectedUserForSessions.profileImage}
@@ -450,38 +524,14 @@ export default function SessionsPage() {
         <div className="space-y-4 font-sans text-xs text-on-surface">
           {!isUserSessionsLoading && userSessions.length > 0 ? (
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              <div className="rounded-2xl border border-border bg-gradient-to-br from-white to-[#FFF8FB] px-3 py-2.5">
-                <p className="text-[9px] font-semibold uppercase tracking-wider text-on-surface-muted">
-                  Total
-                </p>
-                <p className="mt-0.5 text-lg font-bold">{sessionListStats.total}</p>
-              </div>
-              <div className="rounded-2xl border border-border bg-gradient-to-br from-white to-[#FFF8FB] px-3 py-2.5">
-                <p className="text-[9px] font-semibold uppercase tracking-wider text-on-surface-muted">
-                  Active
-                </p>
-                <p className="mt-0.5 text-lg font-bold text-primary">
-                  {sessionListStats.active}
-                </p>
-              </div>
-              <div className="rounded-2xl border border-border bg-gradient-to-br from-white to-[#FFF8FB] px-3 py-2.5">
-                <p className="text-[9px] font-semibold uppercase tracking-wider text-on-surface-muted">
-                  Done
-                </p>
-                <p className="mt-0.5 text-lg font-bold">{sessionListStats.completed}</p>
-              </div>
-              <div className="rounded-2xl border border-border bg-gradient-to-br from-white to-[#FFF8FB] px-3 py-2.5">
-                <p className="text-[9px] font-semibold uppercase tracking-wider text-on-surface-muted">
-                  Risk
-                </p>
-                <p
-                  className={`mt-0.5 text-lg font-bold ${
-                    sessionListStats.risk > 0 ? "text-error" : "text-[#287D58]"
-                  }`}
-                >
-                  {sessionListStats.risk}
-                </p>
-              </div>
+              <DrawerStat label="Total" value={sessionListStats.total} tone="orchid" />
+              <DrawerStat label="Active" value={sessionListStats.active} tone="sky" />
+              <DrawerStat label="Done" value={sessionListStats.completed} tone="mint" />
+              <DrawerStat
+                label="Risk"
+                value={sessionListStats.risk}
+                tone={sessionListStats.risk > 0 ? "alert" : "mint"}
+              />
             </div>
           ) : null}
 
@@ -490,7 +540,7 @@ export default function SessionsPage() {
               {[...Array(3)].map((_, i) => (
                 <div
                   key={i}
-                  className="h-24 animate-pulse rounded-2xl border border-border bg-surface"
+                  className="h-24 animate-pulse rounded-2xl border border-[#EADCE5] bg-[#FFF8FB]"
                 />
               ))}
             </div>
@@ -509,7 +559,7 @@ export default function SessionsPage() {
               {userSessions.map((session) => (
                 <div
                   key={session.sessionId}
-                  className="group flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-border bg-gradient-to-br from-white to-[#FFF8FB] p-4 transition-all hover:border-primary/40 hover:shadow-card"
+                  className="group flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-[#EADCE5] bg-gradient-to-br from-white to-[#FFF8FB] p-4 transition-all hover:border-[#B74783]/50 hover:shadow-card"
                   onClick={() =>
                     handleInspect({
                       ...session,
@@ -520,24 +570,24 @@ export default function SessionsPage() {
                 >
                   <div className="min-w-0">
                     <div className="mb-2 flex flex-wrap items-center gap-2">
-                      <span className="font-mono text-[10px] uppercase text-on-surface-variant/70">
+                      <span className="font-mono text-[10px] uppercase text-[#B74783]">
                         ID: {session.sessionId.substring(0, 8)}
                       </span>
                       <span
-                        className={`badge text-[9px] uppercase tracking-wider ${statusBadge(
+                        className={`text-[9px] uppercase tracking-wider ${statusBadge(
                           session.status
                         )}`}
                       >
                         {session.status}
                       </span>
                       {session.hasRisk ? (
-                        <span className="badge badge-error text-[9px] uppercase tracking-wider">
+                        <span className="badge-error text-[9px] uppercase tracking-wider">
                           High Risk
                         </span>
                       ) : null}
                     </div>
                     <div className="flex items-center gap-1.5 text-[11px] text-on-surface">
-                      <span className="material-symbols-outlined text-[14px] text-on-surface-variant">
+                      <span className="material-symbols-outlined text-[14px] text-[#4F7FE8]">
                         schedule
                       </span>
                       {new Date(session.startTime || Date.now()).toLocaleDateString()}{" "}
@@ -545,7 +595,7 @@ export default function SessionsPage() {
                     </div>
                   </div>
 
-                  <span className="material-symbols-outlined text-[20px] text-on-surface-variant transition-colors group-hover:text-primary">
+                  <span className="material-symbols-outlined text-[20px] text-on-surface-variant transition-colors group-hover:text-[#B74783]">
                     chevron_right
                   </span>
                 </div>
@@ -563,11 +613,11 @@ export default function SessionsPage() {
           <div className="flex items-center gap-2.5">
             <button
               onClick={() => setInspectSession(null)}
-              className="mr-1 rounded-full p-1 transition-colors hover:bg-surface-container-high"
+              className="mr-1 rounded-full p-1 transition-colors hover:bg-[#FFE5F0]"
             >
               <span className="material-symbols-outlined text-[16px]">arrow_back</span>
             </button>
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-primary-container font-bold text-sm text-primary ring-1 ring-border">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#FFE5F0] text-sm font-bold text-[#B74783] ring-1 ring-[#EADCE5]">
               {inspectSession?.userProfileImage ? (
                 <AvatarImage
                   src={inspectSession.userProfileImage}
@@ -587,30 +637,30 @@ export default function SessionsPage() {
       >
         <div className="space-y-5 font-sans text-xs text-on-surface">
           {/* Sentiment HUD */}
-          <div className="relative overflow-hidden rounded-[22px] border border-border bg-white p-4 shadow-card">
+          <div className="relative overflow-hidden rounded-[22px] border border-[#EADCE5] bg-white p-4 shadow-card">
             <div
               className="pointer-events-none absolute inset-0"
               style={{
                 backgroundImage:
-                  "radial-gradient(ellipse 80% 70% at 0% 0%, rgba(255,229,240,0.9), transparent 55%)",
+                  "radial-gradient(ellipse 80% 70% at 0% 0%, rgba(255,229,240,0.95), transparent 55%), radial-gradient(ellipse 50% 60% at 100% 100%, rgba(238,244,255,0.7), transparent 55%)",
               }}
             />
             <div className="relative flex items-center justify-between gap-4 font-mono">
               <div>
-                <div className="font-sans text-[10px] uppercase text-on-surface-variant/80">
+                <div className="font-sans text-[10px] uppercase text-[#927C8B]">
                   Duration
                 </div>
-                <div className="mt-1 font-sans text-sm font-semibold text-on-surface">
+                <div className="mt-1 font-sans text-sm font-semibold text-[#49263D]">
                   {inspectSession?.duration || "0m"}
                 </div>
               </div>
               <div>
-                <div className="text-right font-sans text-[10px] uppercase text-on-surface-variant/80">
+                <div className="text-right font-sans text-[10px] uppercase text-[#927C8B]">
                   Patient Status
                 </div>
                 <div className="mt-1 flex justify-end font-sans text-sm font-semibold">
                   <span
-                    className={`badge font-sans text-[10px] uppercase tracking-wide ${
+                    className={`font-sans text-[10px] uppercase tracking-wide ${
                       inspectSession?.hasRisk ? "badge-error" : "badge-success"
                     }`}
                   >
@@ -622,8 +672,8 @@ export default function SessionsPage() {
           </div>
 
           {/* Session Status Manager */}
-          <div className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-gradient-to-br from-white to-[#FFF8FB] p-4">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant/80">
+          <div className="flex items-center justify-between gap-3 rounded-2xl border border-[#EADCE5] bg-gradient-to-br from-white to-[#FFF8FB] p-4">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-[#B74783]">
               Session Status
             </span>
             {adminUser?.role === "superAdmin" ? (
@@ -662,7 +712,7 @@ export default function SessionsPage() {
               </select>
             ) : (
               <span
-                className={`badge text-[10px] uppercase tracking-wider ${statusBadge(
+                className={`text-[10px] uppercase tracking-wider ${statusBadge(
                   inspectSession?.status
                 )}`}
               >
@@ -673,25 +723,25 @@ export default function SessionsPage() {
 
           {/* Transcript logs */}
           <div>
-            <h4 className="mb-3 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-on-surface-variant/80">
-              <span className="material-symbols-outlined text-[14px]">chat</span>
+            <h4 className="mb-3 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-[#795A70]">
+              <span className="material-symbols-outlined text-[14px] text-[#B74783]">chat</span>
               Chat Conversation History
               {isDetailLoading ? (
                 <span className="ml-2 text-on-surface-variant/50">…</span>
               ) : null}
             </h4>
-            <div className="max-h-[360px] space-y-4 overflow-y-auto rounded-2xl border border-border bg-gradient-to-b from-[#FFF8FB] to-white p-4">
+            <div className="max-h-[360px] space-y-4 overflow-y-auto rounded-2xl border border-[#EADCE5] bg-gradient-to-b from-[#FFF8FB] to-white p-4">
               {inspectSession?.isFetching ? (
                 <div className="animate-pulse py-8 text-center text-[11px] text-on-surface-variant/50">
                   Loading transcript...
                 </div>
               ) : !inspectSession?.hasRisk ? (
                 <div className="flex flex-col items-center justify-center space-y-4 px-4 py-12 text-center">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-container text-primary ring-1 ring-border">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFE5F0] text-[#B74783] ring-1 ring-[#EADCE5]">
                     <span className="material-symbols-outlined text-[24px]">lock</span>
                   </div>
                   <div>
-                    <h5 className="text-xs font-semibold text-on-surface">
+                    <h5 className="text-xs font-semibold text-[#49263D]">
                       Transcript Privacy Enabled
                     </h5>
                     <p className="mx-auto mt-1 max-w-[240px] text-[10px] leading-normal text-on-surface-variant/75">
@@ -723,8 +773,8 @@ export default function SessionsPage() {
                     <div
                       className={`inline-block max-w-[85%] rounded-2xl p-3 text-left text-[11px] leading-relaxed ${
                         msg.role === "user"
-                          ? "border border-border bg-white text-on-surface"
-                          : "border border-primary/20 bg-primary/10 text-primary"
+                          ? "border border-[#DCE7FB] bg-[#EEF4FF] text-[#315FC2]"
+                          : "border border-[#B74783]/25 bg-[#FFE5F0] text-[#9F376F]"
                       }`}
                     >
                       {msg.content}
@@ -736,12 +786,12 @@ export default function SessionsPage() {
           </div>
 
           {/* Compliance dispatch block */}
-          <div className="flex items-center gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4">
-            <span className="material-symbols-outlined text-[20px] text-primary">
+          <div className="flex items-center gap-3 rounded-2xl border border-[#C6E8D6] bg-[#EAF7EF]/70 p-4">
+            <span className="material-symbols-outlined text-[20px] text-[#287D58]">
               shield
             </span>
             <div>
-              <p className="text-[11px] font-semibold text-primary">
+              <p className="text-[11px] font-semibold text-[#287D58]">
                 Secure Conversation
               </p>
               <p className="mt-0.5 text-[10px] text-on-surface-variant/80">

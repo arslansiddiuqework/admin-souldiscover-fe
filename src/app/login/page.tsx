@@ -58,15 +58,24 @@ export default function LoginPage() {
       <div
         className="pointer-events-none absolute left-[-10%] top-[-20%] z-0 h-[800px] w-[800px] rounded-full"
         style={{
-          background: "radial-gradient(circle, rgba(183, 71, 131, 0.16) 0%, rgba(183, 71, 131, 0) 70%)",
+          background: "radial-gradient(circle, rgba(120, 99, 198, 0.22) 0%, rgba(120, 99, 198, 0) 70%)",
           filter: "blur(80px)"
         }}
       />
       <div
         className="pointer-events-none absolute bottom-[-20%] right-[-10%] z-0 h-[700px] w-[700px] rounded-full"
         style={{
-          background: "radial-gradient(circle, rgba(217, 184, 245, 0.35) 0%, rgba(217, 184, 245, 0) 70%)",
+          background: "radial-gradient(circle, rgba(79, 127, 232, 0.2) 0%, rgba(79, 127, 232, 0) 70%)",
           filter: "blur(60px)"
+        }}
+      />
+
+      <div
+        aria-hidden
+        className="pointer-events-none absolute bottom-[-10%] left-[10%] z-0 h-[420px] w-[420px] rounded-full"
+        style={{
+          background: "radial-gradient(circle, rgba(196, 107, 74, 0.16) 0%, rgba(196, 107, 74, 0) 70%)",
+          filter: "blur(70px)",
         }}
       />
 
@@ -80,14 +89,14 @@ export default function LoginPage() {
             className="pointer-events-none absolute inset-0 opacity-90"
             style={{
               background:
-                "radial-gradient(ellipse 70% 60% at 0% 0%, rgba(255,229,240,0.55), transparent 55%), radial-gradient(ellipse 50% 50% at 100% 0%, rgba(241,234,255,0.45), transparent 50%)",
+                "radial-gradient(ellipse 70% 60% at 0% 0%, rgba(240,234,254,0.8), transparent 55%), radial-gradient(ellipse 50% 50% at 100% 0%, rgba(220,235,255,0.7), transparent 50%), radial-gradient(ellipse 40% 40% at 50% 100%, rgba(255,241,233,0.6), transparent 50%)",
             }}
           />
           <div className="relative">
             {isRecovering ? (
               <>
                 <div className="mb-8 text-center">
-                  <p className="label-eyebrow mb-2 text-primary">Account Recovery</p>
+                  <p className="label-eyebrow mb-2 !text-[#7863C6]">Account Recovery</p>
                   <h2 className="mb-2.5 font-display text-3xl font-bold tracking-tight text-on-surface">
                     Forgot Password
                   </h2>
@@ -105,7 +114,7 @@ export default function LoginPage() {
                       Email
                     </label>
                     <div className="field-shell">
-                      <Mail className="absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-primary/70" />
+                      <Mail className="absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-[#7863C6]" />
                       <input
                         className="field-input py-3.5 pl-12 pr-4 text-xs"
                         id="recovery-email"
@@ -120,7 +129,7 @@ export default function LoginPage() {
                   </div>
 
                   <button
-                    className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3.5 text-xs font-bold tracking-wider text-primary-foreground shadow-primary transition-all hover:brightness-105 disabled:opacity-75"
+                    className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#B74783] via-[#9658B7] to-[#7863C6] py-3.5 text-xs font-bold tracking-wider text-white shadow-violet transition-all hover:brightness-105 disabled:opacity-75"
                     type="submit"
                     disabled={isSendingRecovery}
                   >
@@ -130,7 +139,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setIsRecovering(false)}
-                    className="mt-6 flex w-full cursor-pointer items-center justify-center gap-2 text-xs text-on-surface-variant transition-colors hover:text-primary"
+                    className="mt-6 flex w-full cursor-pointer items-center justify-center gap-2 text-xs text-on-surface-variant transition-colors hover:text-[#7863C6]"
                   >
                     <ArrowLeft className="h-3.5 w-3.5" />
                     <span>Back to Sign In</span>
@@ -140,7 +149,7 @@ export default function LoginPage() {
             ) : (
               <>
                 <div className="mb-8 text-center">
-                  <p className="label-eyebrow mb-2 text-primary">Admin Access</p>
+                  <p className="label-eyebrow mb-2 !text-[#7863C6]">Admin Access</p>
                   <h2 className="mb-2.5 font-display text-3xl font-bold tracking-tight text-on-surface">
                     Sign In
                   </h2>
@@ -155,7 +164,7 @@ export default function LoginPage() {
                       Email
                     </label>
                     <div className="field-shell">
-                      <Mail className="absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-primary/70" />
+                      <Mail className="absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-[#7863C6]" />
                       <input
                         className="field-input py-3.5 pl-12 pr-4 text-xs"
                         id="email"
@@ -174,7 +183,7 @@ export default function LoginPage() {
                       Password
                     </label>
                     <div className="field-shell">
-                      <Lock className="absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-primary/70" />
+                      <Lock className="absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-[#7863C6]" />
                       <input
                         className="field-input py-3.5 pl-12 pr-12 text-xs"
                         id="password"
@@ -186,7 +195,7 @@ export default function LoginPage() {
                         onChange={(e) => setPassword(e.target.value)}
                       />
                       <button
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-primary/70 transition-colors hover:text-primary focus:outline-none"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-[#7863C6] transition-colors hover:text-[#5B3FA8] focus:outline-none"
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                       >
@@ -200,7 +209,7 @@ export default function LoginPage() {
                   </div>
 
                   <button
-                    className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3.5 text-xs font-bold tracking-wider text-primary-foreground shadow-primary transition-all hover:brightness-105 disabled:opacity-75"
+                    className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#B74783] via-[#9658B7] to-[#7863C6] py-3.5 text-xs font-bold tracking-wider text-white shadow-violet transition-all hover:brightness-105 disabled:opacity-75"
                     type="submit"
                     disabled={isLoggingIn}
                   >
@@ -211,7 +220,7 @@ export default function LoginPage() {
                     <button
                       type="button"
                       onClick={() => setIsRecovering(true)}
-                      className="cursor-pointer font-semibold text-primary hover:underline"
+                      className="cursor-pointer font-semibold text-[#7863C6] hover:underline"
                     >
                       Forgot password?
                     </button>

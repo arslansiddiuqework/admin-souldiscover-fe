@@ -60,6 +60,28 @@ const config: Config = {
           container: "var(--info-container)",
         },
 
+        violet: {
+          DEFAULT: "var(--violet)",
+          deep: "var(--violet-deep)",
+          soft: "var(--violet-soft)",
+          mid: "var(--violet-mid)",
+        },
+        sky: {
+          DEFAULT: "var(--sky)",
+          deep: "var(--sky-deep)",
+          soft: "var(--sky-soft)",
+        },
+        peach: {
+          DEFAULT: "var(--peach)",
+          soft: "var(--peach-soft)",
+        },
+        mint: {
+          DEFAULT: "var(--mint)",
+          soft: "var(--mint-soft)",
+        },
+        plum: "var(--plum)",
+        lilac: "var(--lilac)",
+
         border: {
           DEFAULT: "var(--border)",
           strong: "var(--border-strong)",
@@ -115,6 +137,8 @@ const config: Config = {
         lifted: "var(--shadow-lifted)",
         popover: "var(--shadow-popover)",
         primary: "var(--shadow-primary)",
+        violet: "var(--shadow-violet)",
+        sky: "var(--shadow-sky)",
         glass: "var(--shadow-glass)",
         nav: "var(--shadow-nav)",
       },

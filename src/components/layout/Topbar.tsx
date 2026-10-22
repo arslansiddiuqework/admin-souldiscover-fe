@@ -199,11 +199,11 @@ export default function Topbar() {
   };
 
   return (
-    <header className="fixed left-0 right-0 top-0 z-40 flex h-[68px] items-center justify-between gap-3 border-b border-border/80 bg-white/75 px-4 backdrop-blur-xl md:left-[260px] md:px-6">
+    <header className="fixed left-0 right-0 top-0 z-40 flex h-[68px] items-center justify-between gap-3 border-b border-border/80 bg-white/80 px-4 backdrop-blur-xl md:left-[260px] md:px-6">
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <button
           onClick={toggleSidebar}
-          className="flex h-10 w-10 flex-shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-white text-on-surface-variant shadow-xs transition-colors hover:bg-[#FFF0F6] hover:text-on-surface active:scale-95 md:hidden"
+          className="flex h-10 w-10 flex-shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-white text-on-surface-variant shadow-xs transition-colors hover:bg-[#F0EAFE] hover:text-on-surface active:scale-95 md:hidden"
           title="Toggle Menu"
           aria-label="Toggle menu"
         >
@@ -224,8 +224,8 @@ export default function Topbar() {
           className="relative w-full max-w-md sm:ml-3"
           ref={dropdownRef}
         >
-          <div className="flex w-full items-center rounded-full border border-border bg-[#FFF8FB]/90 px-4 py-2 shadow-xs transition-all focus-within:border-primary focus-within:bg-white focus-within:ring-4 focus-within:ring-ring">
-            <Search className="mr-2.5 h-4 w-4 text-primary/70" />
+          <div className="flex w-full items-center rounded-full border border-border bg-[#F7F4FF]/90 px-4 py-2 shadow-xs transition-all focus-within:border-violet focus-within:bg-white focus-within:ring-4 focus-within:ring-ring">
+            <Search className="mr-2.5 h-4 w-4 text-violet/80" />
             <input
               className="w-full border-none bg-transparent text-sm text-on-surface outline-none placeholder:text-on-surface-muted focus:ring-0"
               placeholder="Search patients or sessions..."
@@ -268,9 +268,9 @@ export default function Topbar() {
                               setShowDropdown(false);
                               setSearchQuery("");
                             }}
-                            className="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 transition-colors hover:bg-[#FFF0F6]"
+                            className="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 transition-colors hover:bg-[#F0EAFE]"
                           >
-                            <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-container text-xs font-bold text-primary">
+                            <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-sky-soft text-xs font-bold text-sky">
                               {user.profileImage ? (
                                 <AvatarImage
                                   src={user.profileImage}
@@ -315,10 +315,10 @@ export default function Topbar() {
                               setShowDropdown(false);
                               setSearchQuery("");
                             }}
-                            className="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 transition-colors hover:bg-[#FFF0F6]"
+                            className="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 transition-colors hover:bg-[#F0EAFE]"
                           >
-                            <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-xl bg-surface-container-high">
-                              <span className="material-symbols-outlined text-[16px] text-primary">
+                            <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-xl bg-violet-soft">
+                              <span className="material-symbols-outlined text-[16px] text-violet">
                                 chat
                               </span>
                             </div>
@@ -349,12 +349,12 @@ export default function Topbar() {
             onClick={() => {
               setShowNotifDropdown(!showNotifDropdown);
             }}
-            className="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-border bg-white text-on-surface-variant shadow-xs transition-all hover:bg-[#FFF0F6] hover:text-on-surface active:scale-95"
+            className="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-border bg-white text-on-surface-variant shadow-xs transition-all hover:bg-[#F0EAFE] hover:text-on-surface active:scale-95"
             title="Notifications"
             aria-label="Notifications"
             aria-expanded={showNotifDropdown}
           >
-            <Bell className="h-4 w-4 text-primary" />
+            <Bell className="h-4 w-4 text-violet" />
             {unreadCount > 0 && (
               <span className="absolute right-1 top-1 h-2.5 w-2.5 animate-pulse rounded-full border-2 border-white bg-error" />
             )}
@@ -362,14 +362,14 @@ export default function Topbar() {
 
           {showNotifDropdown && (
             <div className="absolute right-0 top-full z-50 mt-2 w-[min(20rem,calc(100vw-1.5rem))] overflow-hidden rounded-2xl py-2 glass-panel-strong sm:w-96">
-              <div className="flex items-center justify-between border-b border-border bg-[#FFF8FB] px-4 py-2.5">
+              <div className="flex items-center justify-between border-b border-border bg-[#F7F4FF] px-4 py-2.5">
                 <span className="text-xs font-semibold text-on-surface">
                   Notifications
                 </span>
                 {notifications.length > 0 && (
                   <button
                     onClick={handleMarkAllAsRead}
-                    className="text-[10px] font-semibold text-primary hover:underline"
+                    className="text-[10px] font-semibold text-violet hover:underline"
                   >
                     Mark all read
                   </button>
@@ -412,7 +412,7 @@ export default function Topbar() {
                       <div
                         key={log._id || log.id}
                         onClick={() => handleNotificationClick(log)}
-                        className="flex cursor-pointer items-start gap-3 p-3 transition-colors hover:bg-[#FFF0F6]"
+                        className="flex cursor-pointer items-start gap-3 p-3 transition-colors hover:bg-[#F0EAFE]"
                       >
                         <div
                           className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-border ${bgIconColor}`}
