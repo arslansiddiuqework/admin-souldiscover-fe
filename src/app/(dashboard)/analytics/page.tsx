@@ -241,7 +241,7 @@ function GlassStat({
 }
 
 export default function AnalyticsPage() {
-  const { metrics, trends, isLoading } = useAnalytics();
+  const { metrics, trends, aiUsage, isLoading } = useAnalytics();
   const [hoveredDay, setHoveredDay] = React.useState<string | null>(null);
 
   const weekDays = React.useMemo(() => {
@@ -583,6 +583,66 @@ export default function AnalyticsPage() {
           tone={metrics.escalationsThisWeek > 0 ? "alert" : "orchid"}
         />
       </section>
+
+      {aiUsage && (
+        <section className="panel p-5">
+          <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="text-base font-bold text-on-surface">AI chat capacity</h2>
+              <p className="text-[11px] text-on-surface-muted">
+                OpenRouter quotas for {aiUsage.dayKey} / {aiUsage.monthKey} (UTC)
+              </p>
+            </div>
+            <Link href="/ai-usage" className="soft-btn-violet text-xs">
+              Full AI usage
+            </Link>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-2xl border border-border bg-[#F8F5FC] px-4 py-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-on-surface-muted">
+                Today
+              </p>
+              <p className="mt-1 text-2xl font-bold text-on-surface">
+                {formatNumber(aiUsage.globalDay)}
+                <span className="text-sm font-normal text-on-surface-muted">
+                  {" "}
+                  / {formatNumber(aiUsage.dailyLimit)}
+                </span>
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border bg-[#FFF0F6] px-4 py-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-on-surface-muted">
+                This month
+              </p>
+              <p className="mt-1 text-2xl font-bold text-on-surface">
+                {formatNumber(aiUsage.globalMonth)}
+                <span className="text-sm font-normal text-on-surface-muted">
+                  {" "}
+                  / {formatNumber(aiUsage.monthlyLimit)}
+                </span>
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border bg-white px-4 py-3 sm:col-span-2">
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-on-surface-muted">
+                Message sources (7d)
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {(aiUsage.messageSources || []).length === 0 && (
+                  <span className="text-xs text-on-surface-muted">No chat this week</span>
+                )}
+                {(aiUsage.messageSources || []).map((s) => (
+                  <span
+                    key={s.source}
+                    className="rounded-full border border-border px-3 py-1 text-xs font-semibold capitalize"
+                  >
+                    {s.source}: {formatNumber(s.count)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Rings + chart */}
       <section className="grid grid-cols-1 gap-4 xl:grid-cols-12">

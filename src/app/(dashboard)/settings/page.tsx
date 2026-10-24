@@ -19,6 +19,7 @@ export default function SettingsPage() {
   const [maxPerDay, setMaxPerDay] = useState(3);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   // Keep local state in sync with fetched settings
   useEffect(() => {
@@ -35,12 +36,19 @@ export default function SettingsPage() {
     setSaveSuccess(false);
     setSaveError("");
 
+    if (!confirmPassword.trim()) {
+      setSaveError("Enter your admin password to save security settings.");
+      return;
+    }
+
     try {
       await updateSettings({
         crisisEnabled,
         cooldownHours,
         maxPerDay,
+        confirmPassword,
       });
+      setConfirmPassword("");
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 4000);
     } catch (err: any) {
@@ -159,11 +167,11 @@ export default function SettingsPage() {
           spark={[4, 4, 5, 5, 6, 6, 6, 7]}
         />
         <MetricTile
-          tone={settings?.twilioConfigured ? "mint" : "peach"}
-          icon="cell_tower"
-          label="Twilio"
-          value={settings?.twilioConfigured ? "Ready" : "Missing"}
-          hint="Voice & messaging"
+          tone={settings?.smsConfigured ? "mint" : "peach"}
+          icon="sms"
+          label="TextBee SMS"
+          value={settings?.smsConfigured ? "Ready" : "Missing"}
+          hint="Voice unavailable"
         />
       </div>
 
@@ -176,7 +184,7 @@ export default function SettingsPage() {
             </div>
             <div>
               <h3 className="text-sm font-bold text-[#49263D]">Global System Features</h3>
-              <p className="text-[11px] text-[#795A70]">Crisis engine and Twilio status</p>
+              <p className="text-[11px] text-[#795A70]">Crisis engine and TextBee SMS status</p>
             </div>
           </div>
 
@@ -185,8 +193,8 @@ export default function SettingsPage() {
               <div>
                 <p className="text-sm font-semibold text-[#49263D]">Crisis Escalation Engine</p>
                 <p className="mt-1 max-w-[320px] text-xs leading-relaxed text-[#795A70]">
-                  Enables automated Twilio phone calls and SMS messages during high-risk mental
-                  health events.
+                  Enables automated emergency SMS via TextBee during high-risk mental health
+                  events. Voice calling is not configured.
                 </p>
               </div>
               <button
@@ -211,23 +219,26 @@ export default function SettingsPage() {
 
             <div className="flex items-start justify-between gap-4 py-5">
               <div>
-                <p className="text-sm font-semibold text-[#49263D]">Twilio Integration</p>
+                <p className="text-sm font-semibold text-[#49263D]">TextBee SMS</p>
                 <p className="mt-1 max-w-[320px] text-xs leading-relaxed text-[#795A70]">
-                  Active Twilio API status. Configuration is derived from system environment
-                  credentials.
+                  Server-side TextBee API status from environment credentials. API keys are never
+                  returned to the browser.
                 </p>
               </div>
               <div className="text-right">
                 <span
                   className={`badge text-[10px] ${
-                    settings?.twilioConfigured ? "badge-success" : "badge-error"
+                    settings?.smsConfigured ? "badge-success" : "badge-error"
                   }`}
                 >
-                  {settings?.twilioConfigured ? "Configured" : "Missing Credentials"}
+                  {settings?.smsConfigured ? "Configured" : "Missing Credentials"}
                 </span>
-                {settings?.twilioPhone && settings.twilioPhone !== "Not configured" && (
-                  <p className="mt-1.5 font-mono text-[10px] text-[#927C8B]">
-                    {settings.twilioPhone}
+                <p className="mt-1.5 text-[10px] text-[#927C8B]">
+                  Voice: {settings?.voiceStatus || "VOICE_UNAVAILABLE"}
+                </p>
+                {!settings?.emergencyFullyOperational && settings?.smsConfigured && (
+                  <p className="mt-1 max-w-[160px] text-[10px] leading-snug text-[#B74783]">
+                    SMS ready — voice escalation not available
                   </p>
                 )}
               </div>
@@ -290,6 +301,30 @@ export default function SettingsPage() {
                 />
               </div>
             </div>
+
+            {canUpdate && (
+              <div className="flex flex-col justify-between gap-4 py-5 sm:flex-row sm:items-center">
+                <div>
+                  <p className="text-sm font-semibold text-[#49263D]">
+                    Confirm with password
+                  </p>
+                  <p className="mt-1 max-w-[320px] text-xs leading-relaxed text-[#795A70]">
+                    Step-up authentication is required before changing crisis settings.
+                  </p>
+                </div>
+                <div className="field-shell w-full max-w-[220px] shrink-0">
+                  <input
+                    type="password"
+                    autoComplete="current-password"
+                    disabled={!canUpdate || !hasChanges}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Admin password"
+                    className="field-input px-3 py-1.5 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

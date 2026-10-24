@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/providers";
@@ -9,6 +10,141 @@ import { authService } from "@/services/authService";
 import { Edit2, Check, X, Camera, Trash2, User as UserIcon } from "lucide-react";
 import { AvatarImage } from "@/components/ui/avatar-image";
 import { PageHeader } from "@/components/layout/PageHeader";
+
+function MfaPanel() {
+  const { adminUser } = useAuth();
+  const { showToast } = useToast();
+  const queryClient = useQueryClient();
+  const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
+  const [otpauthUrl, setOtpauthUrl] = useState("");
+  const [secret, setSecret] = useState("");
+  const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
+  const [busy, setBusy] = useState(false);
+
+  const startSetup = async () => {
+    if (!password.trim()) {
+      showToast("Enter your password to begin MFA setup.", "error");
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await authService.mfaSetup(password);
+      setOtpauthUrl(res.otpauthUrl);
+      setSecret(res.secret);
+      showToast("Scan the secret in your authenticator app, then confirm.", "success");
+    } catch (err: any) {
+      showToast(err?.response?.data?.message || "MFA setup failed", "error");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const enable = async () => {
+    setBusy(true);
+    try {
+      const res = await authService.mfaEnable({
+        confirmPassword: password,
+        code,
+      });
+      setRecoveryCodes(res.recoveryCodes || []);
+      setOtpauthUrl("");
+      setSecret("");
+      setCode("");
+      queryClient.invalidateQueries({ queryKey: ["adminMe"] });
+      showToast("MFA enabled. Save your recovery codes now.", "success");
+    } catch (err: any) {
+      showToast(err?.response?.data?.message || "Could not enable MFA", "error");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const disable = async () => {
+    setBusy(true);
+    try {
+      await authService.mfaDisable({ confirmPassword: password, code });
+      setRecoveryCodes([]);
+      queryClient.invalidateQueries({ queryKey: ["adminMe"] });
+      showToast("MFA disabled.", "info");
+    } catch (err: any) {
+      showToast(err?.response?.data?.message || "Could not disable MFA", "error");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="mt-3 space-y-3 rounded-2xl border border-[#DCE7FF] bg-[#F8FBFF] p-4">
+      <p className="label-eyebrow !text-[#4F7FE8]">Authenticator MFA</p>
+      <p className="text-[11px] leading-relaxed text-[#795A70]">
+        Optional by default. Set <code className="font-mono">ADMIN_MFA_ENFORCE=true</code> on
+        the API to warn superAdmins without MFA. Enrollment never locks existing sessions
+        until you finish setup.
+      </p>
+      {adminUser?.mfaEnrollmentRequired && (
+        <p className="rounded-xl bg-[#FFF1E9] px-3 py-2 text-[11px] text-[#C46B4A]">
+          MFA enrollment is recommended for your superAdmin account.
+        </p>
+      )}
+      <input
+        type="password"
+        className="field-input w-full py-2 text-xs"
+        placeholder="Confirm password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        autoComplete="current-password"
+      />
+      {!adminUser?.mfaEnabled ? (
+        <>
+          {!secret ? (
+            <Button variant="primary" isLoading={busy} onClick={startSetup}>
+              Start MFA setup
+            </Button>
+          ) : (
+            <div className="space-y-2">
+              <p className="break-all font-mono text-[10px] text-[#49263D]">{secret}</p>
+              <p className="break-all text-[10px] text-on-surface-muted">{otpauthUrl}</p>
+              <input
+                className="field-input w-full py-2 text-xs tracking-widest"
+                placeholder="6-digit code"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+              />
+              <Button variant="primary" isLoading={busy} onClick={enable}>
+                Confirm & enable MFA
+              </Button>
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="space-y-2">
+          <input
+            className="field-input w-full py-2 text-xs tracking-widest"
+            placeholder="Authenticator or recovery code"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+          />
+          <Button variant="danger" isLoading={busy} onClick={disable}>
+            Disable MFA
+          </Button>
+        </div>
+      )}
+      {recoveryCodes.length > 0 && (
+        <div className="rounded-xl border border-border bg-white p-3">
+          <p className="mb-2 text-[10px] font-bold uppercase text-error">
+            Recovery codes (shown once)
+          </p>
+          <ul className="grid grid-cols-2 gap-1 font-mono text-[11px]">
+            {recoveryCodes.map((c) => (
+              <li key={c}>{c}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function ProfilePage() {
   const { adminUser, logout, isLoggingOut, updateProfile, isUpdatingProfile, deleteAvatar, isDeletingAvatar } = useAuth();
@@ -280,12 +416,25 @@ export default function ProfilePage() {
             </div>
           </div>
 
+          {/* MFA */}
+          <MfaPanel />
+
           {/* Session Info */}
           <div className="mt-3 space-y-3 rounded-2xl border border-[#EBDDF3] bg-[#FDF8FC] p-4">
             <p className="label-eyebrow !text-[#B74783]">Session Information</p>
             <div className="flex items-center justify-between text-[11px]">
               <span className="text-[#795A70]">Status</span>
               <span className="badge badge-success text-[10px]">Active</span>
+            </div>
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-[#795A70]">MFA</span>
+              <span
+                className={`badge text-[10px] ${
+                  adminUser?.mfaEnabled ? "badge-success" : "badge-neutral"
+                }`}
+              >
+                {adminUser?.mfaEnabled ? "Enabled" : "Not enabled"}
+              </span>
             </div>
           </div>
 

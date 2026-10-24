@@ -127,7 +127,7 @@ const heroGhostBtn =
   "inline-flex items-center justify-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-2 text-xs font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/20";
 
 export default function DashboardPage() {
-  const { metrics, trends, isLoading } = useAnalytics();
+  const { metrics, trends, aiUsage, isLoading } = useAnalytics();
   const { logs: recentLogs, isLoading: isLogsLoading } = useLogs({
     category: "ALL",
     severity: "ALL",
@@ -391,7 +391,7 @@ export default function DashboardPage() {
             tone="sky"
           />
           <LinkedTile
-            href="/analytics"
+            href="/engagement"
             icon="mood"
             label="Avg mood"
             value={`${metrics.avgMoodScore || 0}`}
@@ -403,7 +403,7 @@ export default function DashboardPage() {
             tone="orchid"
           />
           <LinkedTile
-            href="/analytics"
+            href="/engagement"
             icon="fitness_center"
             label="Activities / week"
             value={metrics.weeklyActivities || 0}
@@ -411,12 +411,24 @@ export default function DashboardPage() {
             tone="peach"
           />
           <LinkedTile
-            href="/analytics"
+            href="/engagement"
             icon="favorite"
             label="Benefit rate"
             value={`${Math.round(metrics.recoveryRate || 0)}%`}
             hint={`${metrics.benefitedUsersThisWeek || 0} benefited`}
             tone="mint"
+          />
+          <LinkedTile
+            href="/ai-usage"
+            icon="smart_toy"
+            label="AI chat today"
+            value={aiUsage?.globalDay ?? "—"}
+            hint={
+              aiUsage
+                ? `${aiUsage.globalDay}/${aiUsage.dailyLimit} day · ${aiUsage.globalMonth}/${aiUsage.monthlyLimit} mo`
+                : "Quota tracking"
+            }
+            tone="violet"
           />
         </div>
       </section>
@@ -712,6 +724,20 @@ export default function DashboardPage() {
               title="Sessions"
               subtitle="Therapy transcripts"
               tone="sky"
+            />
+            <ModuleLink
+              href="/engagement"
+              icon="monitoring"
+              title="Engagement"
+              subtitle="Mood & activities"
+              tone="orchid"
+            />
+            <ModuleLink
+              href="/ai-usage"
+              icon="smart_toy"
+              title="AI Usage"
+              subtitle="Chat quotas"
+              tone="violet"
             />
             <ModuleLink
               href="/consultations"

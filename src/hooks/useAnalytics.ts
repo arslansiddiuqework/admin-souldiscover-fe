@@ -1,6 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { analyticsService } from "@/services/analyticsService";
-import type { AnalyticsMetrics, AnalyticsTrends } from "@/types";
+import type {
+  AnalyticsMetrics,
+  AnalyticsTrends,
+  AnalyticsAiUsage,
+} from "@/types";
 
 export function useAnalytics() {
   const { data, isLoading, error, refetch } = useQuery({
@@ -63,6 +67,7 @@ export function useAnalytics() {
   return {
     metrics: data?.metrics || defaultMetrics,
     trends: data?.trends || defaultTrends,
+    aiUsage: (data?.aiUsage || null) as AnalyticsAiUsage | null,
     isLoading,
     error,
     refetch,

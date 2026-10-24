@@ -12,6 +12,7 @@ const CATEGORY_CHIPS = [
   { id: "CRISIS", label: "Crisis" },
   { id: "SECURITY", label: "Security" },
   { id: "SYSTEM", label: "System" },
+  { id: "ADMIN", label: "Admin" },
 ] as const;
 
 function severityStyle(sev: string) {
@@ -30,6 +31,7 @@ function categoryStyle(cat: string) {
   if (cat === "CRISIS") return "bg-[#FFF0F2] text-[#B4233D]";
   if (cat === "SECURITY") return "bg-[#FFF1E9] text-[#C46B4A]";
   if (cat === "SYSTEM") return "bg-[#F0EAFE] text-[#5B3FA8]";
+  if (cat === "ADMIN") return "bg-[#FFE5F0] text-[#B74783]";
   return "bg-[#F4F0F8] text-[#795A70]";
 }
 

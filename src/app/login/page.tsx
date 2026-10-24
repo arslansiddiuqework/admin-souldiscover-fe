@@ -16,19 +16,38 @@ export default function LoginPage() {
   const [isRecovering, setIsRecovering] = useState(false);
   const [recoveryEmail, setRecoveryEmail] = useState("");
   const [isSendingRecovery, setIsSendingRecovery] = useState(false);
+  const [mfaToken, setMfaToken] = useState<string | null>(null);
+  const [mfaCode, setMfaCode] = useState("");
 
-  const { login, isLoggingIn } = useAuth();
+  const { login, isLoggingIn, verifyMfa, isVerifyingMfa } = useAuth();
   const { showToast } = useToast();
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await login({ email, password });
+      const result = await login({ email, password });
+      if ("mfaRequired" in result && result.mfaRequired) {
+        setMfaToken(result.mfaToken);
+        showToast("Enter your authenticator code to continue.", "success");
+        return;
+      }
       showToast("Access granted. Welcome back!", "success");
       router.push("/dashboard");
     } catch (err: any) {
       showToast(err.response?.data?.message || "Invalid credentials.", "error");
+    }
+  };
+
+  const handleMfa = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mfaToken) return;
+    try {
+      await verifyMfa({ mfaToken, code: mfaCode.trim() });
+      showToast("Access granted. Welcome back!", "success");
+      router.push("/dashboard");
+    } catch (err: any) {
+      showToast(err.response?.data?.message || "Invalid MFA code.", "error");
     }
   };
 
@@ -93,7 +112,58 @@ export default function LoginPage() {
             }}
           />
           <div className="relative">
-            {isRecovering ? (
+            {mfaToken ? (
+              <>
+                <div className="mb-8 text-center">
+                  <p className="label-eyebrow mb-2 !text-[#7863C6]">Multi-factor</p>
+                  <h2 className="mb-2.5 font-display text-3xl font-bold tracking-tight text-on-surface">
+                    Verify MFA
+                  </h2>
+                  <p className="mx-auto max-w-[280px] text-xs leading-relaxed text-on-surface-variant">
+                    Enter the 6-digit code from your authenticator app, or a recovery code.
+                  </p>
+                </div>
+                <form className="space-y-5" onSubmit={handleMfa}>
+                  <div className="space-y-2">
+                    <label className="label-eyebrow block text-on-surface" htmlFor="mfa-code">
+                      Authenticator code
+                    </label>
+                    <div className="field-shell">
+                      <Lock className="absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-[#7863C6]" />
+                      <input
+                        className="field-input py-3.5 pl-12 pr-4 text-xs tracking-widest"
+                        id="mfa-code"
+                        name="mfa-code"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        placeholder="123456"
+                        required
+                        value={mfaCode}
+                        onChange={(e) => setMfaCode(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <button
+                    className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#B74783] via-[#9658B7] to-[#7863C6] py-3.5 text-xs font-bold tracking-wider text-white shadow-violet transition-all hover:brightness-105 disabled:opacity-75"
+                    type="submit"
+                    disabled={isVerifyingMfa}
+                  >
+                    {isVerifyingMfa ? "Verifying..." : "Verify & Sign In"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMfaToken(null);
+                      setMfaCode("");
+                    }}
+                    className="mt-6 flex w-full cursor-pointer items-center justify-center gap-2 text-xs text-on-surface-variant transition-colors hover:text-[#7863C6]"
+                  >
+                    <ArrowLeft className="h-3.5 w-3.5" />
+                    <span>Back to Sign In</span>
+                  </button>
+                </form>
+              </>
+            ) : isRecovering ? (
               <>
                 <div className="mb-8 text-center">
                   <p className="label-eyebrow mb-2 !text-[#7863C6]">Account Recovery</p>

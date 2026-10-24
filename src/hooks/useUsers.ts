@@ -11,7 +11,13 @@ export function useUsers(params: GetUsersParams) {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: userService.deleteUser,
+    mutationFn: ({
+      id,
+      confirmPassword,
+    }: {
+      id: string;
+      confirmPassword: string;
+    }) => userService.deleteUser(id, confirmPassword),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.invalidateQueries({ queryKey: ["analytics"] });

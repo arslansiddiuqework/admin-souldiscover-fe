@@ -11,6 +11,7 @@ interface ModalProps {
   cancelText?: string;
   isConfirming?: boolean;
   variant?: "primary" | "danger";
+  children?: React.ReactNode;
 }
 
 export function Modal({
@@ -23,6 +24,7 @@ export function Modal({
   cancelText = "Cancel",
   isConfirming = false,
   variant = "primary",
+  children,
 }: ModalProps) {
   if (!isOpen) return null;
 
@@ -64,9 +66,11 @@ export function Modal({
         <h3 className="relative mb-2 text-lg font-bold tracking-tight text-on-surface">
           {title}
         </h3>
-        <p className="relative mb-7 text-sm leading-relaxed text-on-surface-variant">
+        <p className="relative mb-4 text-sm leading-relaxed text-on-surface-variant">
           {description}
         </p>
+
+        {children ? <div className="relative mb-7">{children}</div> : <div className="mb-7" />}
 
         <div className="relative flex justify-end gap-3">
           <Button variant="outline" onClick={onClose}>

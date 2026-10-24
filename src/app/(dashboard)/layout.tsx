@@ -13,8 +13,11 @@ const routePermissions: { [key: string]: string } = {
   "/wellness": "users.read",
   "/assessments": "users.read",
   "/consultations": "users.read",
+  "/engagement": "analytics.read",
+  "/ai-usage": "analytics.read",
   "/emergency": "emergency.read",
   "/analytics": "analytics.read",
+  "/security": "logs.read",
   "/logs": "logs.read",
   "/settings": "settings.read",
 };

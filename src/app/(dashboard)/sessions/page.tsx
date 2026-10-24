@@ -676,7 +676,8 @@ export default function SessionsPage() {
             <span className="text-[10px] font-semibold uppercase tracking-wider text-[#B74783]">
               Session Status
             </span>
-            {adminUser?.role === "superAdmin" ? (
+            {adminUser?.role === "superAdmin" ||
+            adminUser?.permissions?.includes("sessions.write") ? (
               <select
                 value={inspectSession?.status || "active"}
                 onChange={async (e) => {

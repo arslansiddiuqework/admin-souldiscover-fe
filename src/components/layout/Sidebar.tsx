@@ -15,8 +15,11 @@ const navItems = [
   { name: "Wellness", href: "/wellness", icon: "self_improvement" },
   { name: "Assessments", href: "/assessments", icon: "quiz" },
   { name: "Consultations", href: "/consultations", icon: "event_available" },
+  { name: "Engagement", href: "/engagement", icon: "monitoring" },
+  { name: "AI Usage", href: "/ai-usage", icon: "smart_toy" },
   { name: "Emergency", href: "/emergency", icon: "emergency", error: true },
   { name: "Analytics", href: "/analytics", icon: "analytics" },
+  { name: "Security", href: "/security", icon: "shield" },
   { name: "Logs", href: "/logs", icon: "description" },
 ];
 
@@ -26,8 +29,11 @@ const routePermissions: { [key: string]: string } = {
   "/wellness": "users.read",
   "/assessments": "users.read",
   "/consultations": "users.read",
+  "/engagement": "analytics.read",
+  "/ai-usage": "analytics.read",
   "/emergency": "emergency.read",
   "/analytics": "analytics.read",
+  "/security": "logs.read",
   "/logs": "logs.read",
   "/settings": "settings.read",
 };

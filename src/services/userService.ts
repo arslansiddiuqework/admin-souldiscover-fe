@@ -30,8 +30,13 @@ export const userService = {
     return data;
   },
 
-  async deleteUser(id: string): Promise<{ message: string }> {
-    const { data } = await apiClient.delete(`/users/${id}`);
+  async deleteUser(
+    id: string,
+    confirmPassword: string
+  ): Promise<{ message: string }> {
+    const { data } = await apiClient.delete(`/users/${id}`, {
+      data: { confirmPassword },
+    });
     return data;
   },
 

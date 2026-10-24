@@ -13,6 +13,7 @@ import { useSearchParams } from "next/navigation";
 import { AvatarImage } from "@/components/ui/avatar-image";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MetricTile } from "@/components/layout/ScreenHero";
+import { hasPermission } from "@/lib/permissions";
 
 const greatVibes = Great_Vibes({
   weight: "400",
@@ -171,16 +172,29 @@ export default function UsersPage() {
     }
   };
 
+  const [deletePassword, setDeletePassword] = useState("");
+
   const handleDeleteConfirm = async () => {
     if (!userToDelete) return;
+    if (!deletePassword.trim()) {
+      showToast("Enter your admin password to confirm deletion.", "error");
+      return;
+    }
     setIsActionPending(true);
     try {
-      await deleteUser(userToDelete._id);
+      await deleteUser({
+        id: userToDelete._id,
+        confirmPassword: deletePassword,
+      });
       showToast(`User account deleted permanently`, "success");
       setSelectedUser(null);
       setUserDetail(null);
-    } catch {
-      showToast("Failed to delete user.", "error");
+      setDeletePassword("");
+    } catch (err: any) {
+      showToast(
+        err?.response?.data?.message || "Failed to delete user.",
+        "error"
+      );
     } finally {
       setIsActionPending(false);
       setUserToDelete(null);
@@ -506,7 +520,7 @@ export default function UsersPage() {
                               visibility
                             </span>
                           </button>
-                          {adminUser?.role === "superAdmin" ? (
+                          {hasPermission(adminUser, "users.delete") ? (
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -654,12 +668,28 @@ export default function UsersPage() {
                 </select>
               </div>
               <div className="flex items-center justify-between gap-2">
+                <span className="text-on-surface-variant/80">Sign-in</span>
+                <span className="font-semibold capitalize text-[#4F7FE8]">
+                  {userDetail?.user?.authProvider ||
+                    selectedUser?.authProvider ||
+                    "local"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-2">
                 <span className="text-on-surface-variant/80">AI Companion</span>
                 <span className="font-semibold text-[#7863C6]">
                   {userDetail?.user?.aiName || selectedUser?.aiName || "Maya"} ·{" "}
                   {userDetail?.user?.aiBehavior ||
                     selectedUser?.aiBehavior ||
                     "supportive"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-on-surface-variant/80">AI chat (month)</span>
+                <span className="font-semibold text-[#B74783]">
+                  {userDetail?.aiUsage
+                    ? `${userDetail.aiUsage.count}/${userDetail.aiUsage.limit}`
+                    : "—"}
                 </span>
               </div>
               <div className="flex items-center justify-between gap-2">
@@ -864,12 +894,15 @@ export default function UsersPage() {
             </DrawerSection>
           )}
 
-          {adminUser?.role === "superAdmin" && (
+          {hasPermission(adminUser, "users.delete") && (
             <div className="flex gap-2 border-t border-[#DCE7FB] pt-4">
               <Button
                 variant="danger"
                 className="flex-1"
-                onClick={() => setUserToDelete(selectedUser)}
+                onClick={() => {
+                  setDeletePassword("");
+                  setUserToDelete(selectedUser);
+                }}
               >
                 Delete User
               </Button>
@@ -880,14 +913,29 @@ export default function UsersPage() {
 
       <Modal
         isOpen={!!userToDelete}
-        onClose={() => setUserToDelete(null)}
+        onClose={() => {
+          setUserToDelete(null);
+          setDeletePassword("");
+        }}
         onConfirm={handleDeleteConfirm}
         title="Delete User Account"
-        description={`Are you sure you want to permanently delete "${userToDelete?.name}"? This action cannot be undone.`}
+        description={`Permanently delete "${userToDelete?.name}"? Re-enter your admin password to confirm.`}
         confirmText="Permanently Delete"
         isConfirming={isActionPending}
         variant="danger"
-      />
+      >
+        <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-wider text-on-surface-muted">
+          Admin password
+        </label>
+        <input
+          type="password"
+          autoComplete="current-password"
+          className="field-input w-full py-2.5 text-sm"
+          value={deletePassword}
+          onChange={(e) => setDeletePassword(e.target.value)}
+          placeholder="Confirm with your password"
+        />
+      </Modal>
     </div>
   );
 }

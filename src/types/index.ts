@@ -13,6 +13,7 @@ export interface AdminUser {
   profileImage: string;
   aiName: string;
   aiBehavior: "supportive" | "friendly" | "motivational" | "calm";
+  authProvider?: "local" | "google";
   status: "active" | "suspended";
   createdAt: string;
   updatedAt: string;
@@ -117,17 +118,31 @@ export interface EscalationLog {
   contactPhone?: string;
   contactWhatsApp?: string;
   callSid?: string;
+  smsBatchId?: string;
+  channel?: string;
+  provider?: string;
+  deliveryStatus?: string;
+  voiceStatus?: string;
   outcome: EscalationOutcome;
   error?: string;
   duration?: number;
   callStatus?: string;
   twilioErrorCode?: string;
+  providerErrorCode?: string;
   createdAt: string;
 }
 
 export interface EmergencyStatus {
   system: {
     crisisEnabled: boolean;
+    smsProvider?: string;
+    smsConfigured?: boolean;
+    textbeeConfigured?: boolean;
+    voiceAvailable?: boolean;
+    voiceStatus?: string;
+    emergencySmsOperational?: boolean;
+    emergencyFullyOperational?: boolean;
+    /** @deprecated Twilio removed — always false */
     twilioConfigured: boolean;
     twilioPhone: string;
     twilioWhatsApp?: string;
@@ -140,6 +155,8 @@ export interface EmergencyStatus {
     completed: number;
     failed: number;
     blocked: number;
+    queued?: number;
+    delivered?: number;
     totalContactRecords: number;
     usersWithConsent: number;
   };
@@ -217,16 +234,108 @@ export interface AnalyticsTrends {
   }[];
 }
 
+export interface AnalyticsAiUsage {
+  dayKey: string;
+  monthKey: string;
+  globalDay: number;
+  globalMonth: number;
+  dailyLimit: number;
+  monthlyLimit: number;
+  messageSources: { source: string; count: number }[];
+}
+
 export interface AnalyticsResponse {
   metrics: AnalyticsMetrics;
   trends: AnalyticsTrends;
+  aiUsage?: AnalyticsAiUsage;
+}
+
+export interface AiUsageResponse {
+  period: { dayKey: string; monthKey: string };
+  limits: {
+    globalDaily: number;
+    globalMonthly: number;
+    userMonthly: number;
+  };
+  usage: {
+    globalDay: number;
+    globalMonth: number;
+    globalDayRemaining: number;
+    globalMonthRemaining: number;
+  };
+  topUsers: {
+    userId: string | null;
+    periodKey: string;
+    count: number;
+    limit: number;
+    remaining: number;
+    name: string;
+    email: string;
+    profileImage: string;
+    status: string;
+  }[];
+}
+
+export interface EngagementResponse {
+  window: { from: string; to: string };
+  mood: {
+    perDay: { date: string; count: number; avgScore: number }[];
+    byLabel: { mood: string; count: number; avgScore: number }[];
+    recent: {
+      userId: string;
+      name: string;
+      email: string;
+      profileImage: string;
+      status: string;
+      score: number;
+      mood: string;
+      source?: string;
+      note?: string;
+      timestamp: string;
+    }[];
+    needsAttention: {
+      userId: string;
+      name: string;
+      email: string;
+      profileImage: string;
+      status: string;
+      latestScore: number;
+      latestMood: string;
+      lowCount: number;
+      lastAt: string;
+    }[];
+  };
+  activities: {
+    breakdown: {
+      _id: string;
+      count: number;
+      completedCount: number;
+      totalMinutes: number;
+    }[];
+    recent: {
+      userId: string;
+      name: string;
+      email: string;
+      profileImage: string;
+      status: string;
+      type: string;
+      duration?: number;
+      completed: boolean;
+      timestamp: string;
+      /** Activity display name from backend */
+      activityName?: string;
+    }[];
+  };
+  chat: {
+    messageSources: { source: string; count: number }[];
+  };
 }
 
 // ── Logs ─────────────────────────────────────────────────────────────────────
 export interface SystemLog {
   _id: string;
   timestamp: string;
-  category: "SYSTEM" | "AUTH" | "CRISIS" | "SECURITY";
+  category: "SYSTEM" | "AUTH" | "CRISIS" | "SECURITY" | "ADMIN";
   severity: "INFO" | "WARNING" | "CRITICAL";
   description: string;
   operator?: string;
@@ -235,6 +344,9 @@ export interface SystemLog {
   userId?: string;
   sessionId?: string;
   userProfileImage?: string;
+  action?: string;
+  email?: string;
+  ip?: string;
 }
 
 // ── Admin Auth ───────────────────────────────────────────────────────────────
@@ -246,6 +358,9 @@ export interface AdminProfile {
   role: "admin" | "superAdmin";
   permissions: string[];
   lastLogin: string;
+  mfaEnabled?: boolean;
+  mfaEnrollmentRequired?: boolean;
+  recoveryCodesRemaining?: number;
 }
 
 export interface AdminLoginResponse {

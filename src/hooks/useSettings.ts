@@ -10,7 +10,9 @@ export function useSettings() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (update: Partial<SystemSettings>) => settingService.updateSettings(update),
+    mutationFn: (
+      update: Partial<SystemSettings> & { confirmPassword: string }
+    ) => settingService.updateSettings(update),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["settings"] });
     },

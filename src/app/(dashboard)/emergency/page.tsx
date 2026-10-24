@@ -400,6 +400,14 @@ export default function EmergencyPage() {
                             </span>
                           </div>
                         )}
+                        {log.smsBatchId && (
+                          <div
+                            className="max-w-[160px] truncate font-mono text-[10px] text-[#927C8B]"
+                            title={log.smsBatchId}
+                          >
+                            Batch: {log.smsBatchId}
+                          </div>
+                        )}
                         {log.callSid && (
                           <div
                             className="max-w-[160px] truncate font-mono text-[10px] text-[#927C8B]"
@@ -408,20 +416,27 @@ export default function EmergencyPage() {
                             SID: {log.callSid}
                           </div>
                         )}
-                        {(log.error || log.twilioErrorCode) && (
+                        {log.deliveryStatus && (
+                          <div className="text-[10px] text-[#795A70]">
+                            Delivery: {log.deliveryStatus}
+                          </div>
+                        )}
+                        {(log.error || log.twilioErrorCode || log.providerErrorCode) && (
                           <div className="max-w-[220px] text-[10px] font-semibold leading-snug text-[#B4233D]">
                             {log.error}
-                            {log.twilioErrorCode && (
+                            {(log.providerErrorCode || log.twilioErrorCode) && (
                               <span className="ml-1 opacity-70">
-                                ({log.twilioErrorCode})
+                                ({log.providerErrorCode || log.twilioErrorCode})
                               </span>
                             )}
                           </div>
                         )}
                         {!log.duration &&
                           !log.callSid &&
+                          !log.smsBatchId &&
                           !log.error &&
                           !log.twilioErrorCode &&
+                          !log.providerErrorCode &&
                           log.crisisRiskScore == null && (
                             <span className="text-[10px] text-[#927C8B]">—</span>
                           )}
@@ -543,33 +558,53 @@ export default function EmergencyPage() {
             </div>
             <div>
               <h3 className="text-sm font-bold text-[#49263D]">Communication System</h3>
-              <p className="text-[11px] text-[#927C8B]">Twilio voice & WhatsApp readiness</p>
+              <p className="text-[11px] text-[#927C8B]">TextBee SMS readiness (voice unavailable)</p>
             </div>
           </div>
 
           <div className="divide-y divide-[#EEF4FF] px-5 py-1">
             <div className="flex items-center justify-between py-3.5 text-xs">
-              <span className="text-[#795A70]">Twilio Configured</span>
+              <span className="text-[#795A70]">TextBee SMS</span>
               <span
                 className={`badge text-[10px] ${
-                  status?.system?.twilioConfigured ? "badge-success" : "badge-error"
+                  status?.system?.smsConfigured ? "badge-success" : "badge-error"
                 }`}
               >
-                {status?.system?.twilioConfigured ? "Yes" : "No"}
+                {status?.system?.smsConfigured ? "Configured" : "Not configured"}
               </span>
             </div>
 
             <div className="flex items-center justify-between py-3.5 text-xs">
-              <span className="text-[#795A70]">Emergency Number (Voice)</span>
-              <span className="font-mono font-semibold text-[#49263D]">
-                {status?.system?.twilioPhone || "Not Configured"}
+              <span className="text-[#795A70]">Provider</span>
+              <span className="font-semibold text-[#49263D]">
+                {status?.system?.smsProvider || "textbee"}
               </span>
             </div>
 
             <div className="flex items-center justify-between py-3.5 text-xs">
-              <span className="text-[#795A70]">WhatsApp Number</span>
-              <span className="font-mono font-semibold text-[#49263D]">
-                {status?.system?.twilioWhatsApp || "Not Configured"}
+              <span className="text-[#795A70]">Voice escalation</span>
+              <span className="badge badge-error text-[10px]">
+                {status?.system?.voiceStatus || "VOICE_UNAVAILABLE"}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between py-3.5 text-xs">
+              <span className="text-[#795A70]">Fully operational</span>
+              <span
+                className={`badge text-[10px] ${
+                  status?.system?.emergencyFullyOperational
+                    ? "badge-success"
+                    : "badge-error"
+                }`}
+              >
+                {status?.system?.emergencyFullyOperational ? "Yes" : "No (SMS-only)"}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between py-3.5 text-xs">
+              <span className="text-[#795A70]">Queued / Delivered</span>
+              <span className="font-semibold text-[#49263D]">
+                {status?.stats?.queued ?? 0} / {status?.stats?.delivered ?? 0}
               </span>
             </div>
 

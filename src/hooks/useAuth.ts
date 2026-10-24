@@ -36,7 +36,23 @@ export function useAuth() {
   const loginMutation = useMutation({
     mutationFn: authService.login,
     onSuccess: (data) => {
-      queryClient.setQueryData(["adminMe"], { authenticated: true, admin: data.admin });
+      if ("mfaRequired" in data && data.mfaRequired) return;
+      if ("admin" in data && data.admin) {
+        queryClient.setQueryData(["adminMe"], {
+          authenticated: true,
+          admin: data.admin,
+        });
+      }
+    },
+  });
+
+  const mfaVerifyMutation = useMutation({
+    mutationFn: authService.verifyMfa,
+    onSuccess: (data) => {
+      queryClient.setQueryData(["adminMe"], {
+        authenticated: true,
+        admin: data.admin,
+      });
     },
   });
 
@@ -69,6 +85,8 @@ export function useAuth() {
     login: loginMutation.mutateAsync,
     isLoggingIn: loginMutation.isPending,
     loginError: loginMutation.error,
+    verifyMfa: mfaVerifyMutation.mutateAsync,
+    isVerifyingMfa: mfaVerifyMutation.isPending,
     logout: logoutMutation.mutate,
     isLoggingOut: logoutMutation.isPending,
     updateProfile: updateProfileMutation.mutateAsync,
